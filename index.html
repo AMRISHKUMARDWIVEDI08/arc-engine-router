@@ -1,8 +1,11 @@
-export async function estimateGas(provider, tx) {
+export async function simulateTx(provider, tx) {
   try {
-    const gas = await provider.estimateGas(tx);
-    return gas;
-  } catch (e) {
-    return null;
+    await provider.call(tx);
+    return { success: true };
+  } catch (err) {
+    return {
+      success: false,
+      error: err.message
+    };
   }
 }
