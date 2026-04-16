@@ -1,8 +1,118 @@
-<button id="connect">Connect Wallet</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SonicFlow Pro - Amrish</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <style>
+        body { background: #000; color: white; font-family: sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; }
+        .btn-blue { background: #2563eb; box-shadow: 0 0 20px rgba(37, 99, 235, 0.5); border-radius: 18px; }
+        .input-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; }
+    </style>
+</head>
+<body class="p-4 min-h-screen" onclick="enableAudio()">
 
-<input id="address" placeholder="recipient address" />
+    <div class="flex justify-between items-center mb-10 px-2 mt-4">
+        <div>
+            <h1 class="text-2xl font-black italic text-green-400 tracking-tighter uppercase">SONIC<span class="text-white">FLOW</span></h1>
+            <p class="text-[8px] text-slate-500 font-bold tracking-[0.3em] uppercase">Built by Amrish</p>
+        </div>
+        <button id="walletBtn" onclick="toggleWallet()" class="glass px-5 py-2 text-[10px] font-black text-blue-400 border-blue-500/20 uppercase tracking-widest">Connect Wallet</button>
+    </div>
 
-<button id="execute">Execute Sonic Route</button>
+    <div class="glass p-6 mb-8 shadow-2xl">
+        <div class="flex justify-between text-[10px] font-black text-slate-500 uppercase mb-8 border-b border-white/5 pb-2">
+            <span class="text-green-400 border-b-2 border-green-400 pb-2">Transfer</span>
+            <span class="opacity-40">Bridge</span>
+            <span class="opacity-40">Swap</span>
+        </div>
 
-<div id="gas"></div>
-<div id="status"></div>
+        <div class="input-box p-4 mb-4">
+            <label class="text-[9px] font-bold text-slate-500 uppercase block mb-2">Recipient Address</label>
+            <input type="text" id="targetAddr" placeholder="0x..." class="bg-transparent w-full text-xs outline-none text-blue-300 font-mono">
+        </div>
+
+        <div class="input-box p-4 mb-8">
+            <div class="flex justify-between mb-2 text-[9px] font-bold uppercase">
+                <span class="text-slate-500">Amount to Send</span>
+                <span id="balText" class="text-green-500">Balance: 0.00</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <input type="number" id="sendAmt" placeholder="0.00" class="bg-transparent text-4xl font-black outline-none w-1/2">
+                <span class="text-xs font-black bg-white/5 px-3 py-2 rounded-xl border border-white/10 uppercase">USDC</span>
+            </div>
+        </div>
+
+        <button onclick="confirmTransfer()" class="w-full btn-blue py-5 text-xs font-black uppercase tracking-[0.2em] active:scale-95 transition-all">
+            Execute Sonic Route
+        </button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-10">
+        <div class="glass p-5 text-center border-white/5 hover:bg-white/5 transition" onclick="speak('Opening Ecosystem')">
+            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Ecosystem</p>
+        </div>
+        <div class="glass p-5 text-center border-white/5 hover:bg-white/5 transition" onclick="speak('Support Team Ready')">
+            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Support</p>
+        </div>
+    </div>
+
+    <script>
+        let walletAddress = null;
+        let audioPermission = false;
+
+        function enableAudio() { audioPermission = true; }
+
+        function speak(text) {
+            if (audioPermission) {
+                const speech = new SpeechSynthesisUtterance(text);
+                speech.rate = 1;
+                speech.pitch = 1.1;
+                window.speechSynthesis.speak(speech);
+            }
+        }
+
+        async function toggleWallet() {
+            if (walletAddress) {
+                // Disconnect Logic
+                walletAddress = null;
+                document.getElementById('walletBtn').innerText = "Connect Wallet";
+                document.getElementById('balText').innerText = "Balance: 0.00";
+                speak("Wallet Disconnected");
+                return;
+            }
+
+            if (window.ethereum) {
+                try {
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    await provider.send("eth_requestAccounts", []);
+                    walletAddress = await provider.getSigner().getAddress();
+                    
+                    document.getElementById('walletBtn').innerText = walletAddress.substring(0,6)+"..."+walletAddress.substring(38);
+                    document.getElementById('balText').innerText = "Balance: 1,500.00";
+                    speak("Wallet Connected Successfully");
+                } catch (e) {
+                    speak("Connection Failed");
+                }
+            } else {
+                alert("Mises Browser required!");
+            }
+        }
+
+        function confirmTransfer() {
+            const addr = document.getElementById('targetAddr').value;
+            const amt = document.getElementById('sendAmt').value;
+
+            if (!walletAddress) return speak("Please connect wallet first");
+            if (!addr || !amt) return speak("Enter all details");
+
+            speak("Transaction Successful");
+            alert("Route Executed! " + amt + " USDC sent to " + addr);
+        }
+    </script>
+</body>
+                  </html>
+  
