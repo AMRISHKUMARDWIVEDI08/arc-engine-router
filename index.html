@@ -3,184 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArcFlow Pro - Professional Router</title>
-    <meta property="fc:frame" content="vNext">
-    <meta property="fc:frame:image" content="https://arcflow.app/banner.png">
-    
+    <title>ArcFlow Pro V26 - Full Logic</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <style>
-        body { background: #010409; color: #e6edf3; font-family: -apple-system, system-ui, sans-serif; }
-        .glass { background: rgba(13, 17, 23, 0.8); border: 1px solid #30363d; border-radius: 12px; }
-        .btn-arc { background: #238636; color: white; font-weight: 600; transition: 0.2s; border-radius: 8px; }
-        .btn-arc:hover { background: #2ea043; }
-        .input-arc { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; color: white; outline: none; }
-        .banner-mini { background: linear-gradient(90deg, #161b22, #0d1117); border: 1px solid #30363d; height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
-        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; }
+        body { background: #020617; color: white; font-family: sans-serif; }
+        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; }
+        .tab-btn { color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 11px; cursor: pointer; padding-bottom: 6px; border-bottom: 2px solid transparent; transition: 0.3s; }
+        .tab-active { color: #3b82f6; border-bottom: 2px solid #3b82f6; }
+        .hidden-content { display: none; }
+        .input-style { background: #070b14; border: 1px solid #1e293b; border-radius: 10px; width: 100%; padding: 12px; outline: none; }
+        .grid-item { background: #1e293b66; border: 1px solid #ffffff0d; border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; font-size: 9px; font-weight: bold; text-transform: uppercase; }
     </style>
 </head>
-<body class="p-4 pb-24" onclick="initApp()">
+<body class="p-4 pb-20" onclick="initMusic()">
 
-    <div class="banner-mini">
-        <span class="text-[9px] font-bold tracking-[0.5em] text-blue-500 uppercase">Arc House Ecosystem</span>
-    </div>
-
-    <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center gap-3">
-            <img src="logo.png" class="h-10 w-10 rounded-lg border border-[#30363d]">
-            <div>
-                <h1 class="text-lg font-bold leading-none">ArcFlow <span class="text-blue-500 font-medium text-xs">Pro V26</span></h1>
-                <p class="text-[9px] text-gray-500 uppercase tracking-tighter mt-1">Institutional Router UI</p>
-            </div>
-        </div>
-        <button id="connectBtn" onclick="connectWallet()" class="btn-arc px-4 py-2 text-[11px]">Connect Wallet</button>
+    <div class="bg-slate-800/40 border border-blue-500/10 rounded-xl h-12 flex items-center justify-center mb-6">
+        <p class="text-[9px] font-bold tracking-[0.6em] text-blue-500 uppercase">Arc House Ecosystem</p>
     </div>
 
     <div class="glass p-5 mb-6">
-        <div class="flex justify-between items-start mb-4">
-            <div class="flex gap-2">
-                <span id="dot" class="status-dot bg-red-500 mt-1"></span>
-                <span id="statusTxt" class="text-[10px] text-gray-400 font-bold uppercase">Disconnected</span>
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <span id="dot" class="h-2 w-2 bg-red-500 rounded-full"></span>
+                <span id="status" class="text-[10px] text-slate-500 uppercase font-bold">Disconnected</span>
             </div>
             <div class="flex items-center gap-2">
-                <span class="text-[10px] text-gray-500">DEMO MODE</span>
-                <input type="checkbox" id="demoMode" class="accent-blue-500">
+                <span class="text-[9px] text-slate-500">DEMO MODE</span>
+                <input type="checkbox" id="demoToggle" class="accent-blue-500">
             </div>
         </div>
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <p class="text-[8px] text-gray-500 uppercase mb-1">Arc Testnet</p>
-                <h3 id="balUSDC" class="text-lg font-bold text-white">0.00 <span class="text-xs text-gray-500">USDC</span></h3>
-                <h3 class="text-sm font-bold text-gray-400">0.00 <span class="text-[10px]">FURC</span></h3>
+                <p class="text-[9px] text-blue-500 font-bold uppercase mb-1">Arc Testnet</p>
+                <p id="balUSDC" class="text-xl font-bold">0.00 <span class="text-xs text-slate-500">USDC</span></p>
+                <p class="text-xs text-slate-400">0.00 <span class="text-[9px]">FURC</span></p>
             </div>
-            <div class="text-right border-l border-gray-800 pl-4">
-                <p class="text-[8px] text-gray-500 uppercase mb-1">Arbitrum Sepolia</p>
-                <h3 class="text-sm font-bold text-blue-400">0.00 <span class="text-[10px]">USDC</span></h3>
-                <p class="text-[10px] text-yellow-500 font-bold mt-2">USYC Vault: 0.00</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="flex gap-4 text-[11px] font-bold uppercase mb-4 px-1 text-gray-500">
-        <span class="text-blue-500 border-b-2 border-blue-500 pb-1">Transfer</span>
-        <span class="hover:text-white cursor-pointer">Swap</span>
-        <span class="hover:text-white cursor-pointer">Bridge</span>
-    </div>
-    <div class="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
-        <button class="glass px-4 py-2 text-[9px] font-bold whitespace-nowrap">🤖 ArcAI Assistant</button>
-        <button class="glass px-4 py-2 text-[9px] font-bold whitespace-nowrap">📈 Network Scanner</button>
-        <button class="glass px-4 py-2 text-[9px] font-bold whitespace-nowrap">💎 Yield Vault</button>
-    </div>
-
-    <div class="glass p-6 mb-8">
-        <label class="text-[10px] font-bold text-gray-500 uppercase mb-2 block">Select Asset</label>
-        <select class="input-arc w-full p-3 text-sm mb-4">
-            <option>USDC (Circle Stablecoin)</option>
-            <option>FURC (Gas Token)</option>
-            <option>USYC (Yield Token)</option>
-        </select>
-        
-        <input type="text" id="address" placeholder="Recipient Address 0x..." class="input-arc w-full p-3 text-sm mb-4 font-mono">
-        
-        <div class="flex justify-between items-center mb-4">
-            <span class="text-[10px] text-gray-500 font-bold">AMOUNT</span>
-            <div class="flex gap-2">
-                <button onclick="setAmt(10)" class="bg-gray-800 px-3 py-1 rounded text-[10px]">10</button>
-                <button onclick="setAmt(100)" class="bg-gray-800 px-3 py-1 rounded text-[10px]">MAX</button>
+            <div class="text-right border-l border-slate-800 pl-4">
+                <p class="text-[9px] text-purple-500 font-bold uppercase mb-1">Arb Sepolia</p>
+                <p class="text-sm font-bold">0.00 <span class="text-[9px]">USDC</span></p>
+                <p class="text-[9px] text-yellow-500 font-bold mt-2">USYC Vault: 0.00</p>
             </div>
         </div>
-        <input type="number" id="amt" placeholder="0.00" class="input-arc w-full p-4 text-2xl font-black mb-6">
-        
-        <button onclick="executeAction()" class="w-full btn-arc py-4 text-xs uppercase tracking-widest shadow-lg">Execute Sonic Route</button>
     </div>
 
-    <div class="space-y-6">
+    <div class="flex gap-6 mb-6 px-1 border-b border-white/5">
+        <div id="t-transfer" onclick="switchTab('transfer')" class="tab-btn tab-active">Transfer</div>
+        <div id="t-swap" onclick="switchTab('swap')" class="tab-btn">Swap</div>
+        <div id="t-bridge" onclick="switchTab('bridge')" class="tab-btn">Bridge</div>
+    </div>
+
+    <div id="transfer-content" class="glass p-6 mb-8">
+        <label class="text-[10px] font-bold text-slate-500 uppercase mb-3 block italic">Select Asset</label>
+        <select class="input-style mb-4 text-blue-300"><option>USDC (Stablecoin)</option><option>FURC (Native)</option></select>
+        <input type="text" placeholder="Recipient 0x..." class="input-style mb-4 font-mono text-[12px]">
+        <input type="number" id="amt" placeholder="0.00" class="input-style h-14 text-2xl font-black mb-6">
+        <button onclick="execute()" class="w-full bg-blue-600 py-4 rounded-xl font-bold uppercase text-xs tracking-widest">Execute Sonic Route</button>
+    </div>
+
+    <div id="swap-content" class="glass p-6 mb-8 hidden-content">
+        <p class="text-center text-slate-400 py-10 font-bold italic uppercase text-xs">Swap Interface Loading...</p>
+    </div>
+
+    <div id="bridge-content" class="glass p-6 mb-8 hidden-content">
+        <p class="text-center text-slate-400 py-10 font-bold italic uppercase text-xs">Bridge Routes Loading...</p>
+    </div>
+
+    <div class="flex gap-2 mb-8 overflow-x-auto pb-2">
+        <div class="grid-item whitespace-nowrap px-6">🤖 ArcAI Assistant</div>
+        <div class="grid-item whitespace-nowrap px-6">📈 Scanner</div>
+        <div class="grid-item whitespace-nowrap px-6">💎 Yield</div>
+    </div>
+
+    <div class="space-y-6 px-1">
         <div>
-            <h4 class="text-[10px] font-bold text-blue-500 uppercase mb-3 px-1">Arc House Ecosystem</h4>
+            <h3 class="text-[10px] font-bold text-blue-500 uppercase mb-3 tracking-widest italic">Arc Network</h3>
             <div class="grid grid-cols-3 gap-2">
-                <div class="glass p-3 text-center text-[9px] font-bold">FORUM</div>
-                <div class="glass p-3 text-center text-[9px] font-bold">DOCS</div>
-                <div class="glass p-3 text-center text-[9px] font-bold">HOUSE</div>
+                <div class="grid-item">Website</div><div class="grid-item">Docs</div><div class="grid-item">House</div>
             </div>
         </div>
         <div>
-            <h4 class="text-[10px] font-bold text-green-500 uppercase mb-3 px-1">Circle Infrastructure</h4>
+            <h3 class="text-[10px] font-bold text-purple-500 uppercase mb-3 tracking-widest italic">Arbitrum L2</h3>
             <div class="grid grid-cols-3 gap-2">
-                <div class="glass p-3 text-center text-[9px] font-bold">CCTP</div>
-                <div class="glass p-3 text-center text-[9px] font-bold">MINT</div>
-                <div class="glass p-3 text-center text-[9px] font-bold text-green-400">FAUCET</div>
+                <div class="grid-item">Arb Bridge</div><div class="grid-item text-purple-400">Faucet</div><div class="grid-item">Website</div>
             </div>
         </div>
     </div>
 
-    <div class="glass p-5 my-10">
-        <p class="text-[10px] font-bold text-gray-500 uppercase mb-3">Support Forum</p>
-        <textarea id="feedback" placeholder="Submit technical feedback to Pawan..." class="input-arc w-full h-20 p-3 text-xs mb-3 resize-none"></textarea>
-        <button onclick="say('Feedback Sent')" class="w-full bg-gray-800 py-2 rounded text-[10px] font-bold uppercase">Submit to Arc House</button>
-    </div>
-
-    <audio id="bgMusic" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg"></audio>
+    <audio id="bgMusic" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" type="audio/mpeg"></audio>
 
     <script>
-        let wallet = null;
-        let audioActive = false;
+        let musicActive = false;
         const music = document.getElementById('bgMusic');
 
-        function initApp() {
-            if(!audioActive) {
-                music.volume = 0.15; music.play();
-                audioActive = true; say("ArcFlow Gateway Initialized.");
+        // TAB SWITCH LOGIC (Isse Swap aur Bridge blue honge)
+        function switchTab(tab) {
+            // Remove active class from all
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('tab-active'));
+            // Hide all content
+            document.getElementById('transfer-content').classList.add('hidden-content');
+            document.getElementById('swap-content').classList.add('hidden-content');
+            document.getElementById('bridge-content').classList.add('hidden-content');
+
+            // Show selected
+            document.getElementById('t-' + tab).classList.add('tab-active');
+            document.getElementById(tab + '-content').classList.remove('hidden-content');
+            
+            const utter = new SpeechSynthesisUtterance("Switching to " + tab);
+            window.speechSynthesis.speak(utter);
+        }
+
+        function initMusic() { if(!musicActive) { music.volume = 0.2; music.play(); musicActive = true; } }
+
+        async function connect() {
+            if (window.ethereum) {
+                const p = new ethers.providers.Web3Provider(window.ethereum);
+                await p.send("eth_requestAccounts", []);
+                const user = await p.getSigner().getAddress();
+                const b = await p.getBalance(user);
+                document.getElementById('balUSDC').innerText = parseFloat(ethers.utils.formatEther(b)).toFixed(2) + " USDC";
+                document.getElementById('dot').className = "h-2 w-2 bg-green-500 rounded-full";
+                document.getElementById('status').innerText = "Connected";
             }
         }
 
-        function say(t) { if(audioActive) { const s = new SpeechSynthesisUtterance(t); window.speechSynthesis.speak(s); } }
-        function setAmt(v) { document.getElementById('amt').value = v; say("Amount set to " + v); }
-
-        async function connectWallet() {
-            if (window.ethereum) {
-                try {
-                    const p = new ethers.providers.Web3Provider(window.ethereum);
-                    
-                    // Fixed Network Config from Docs
-                    await window.ethereum.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [{
-                            chainId: '0x4cef52', // 5042002
-                            chainName: 'Arc Testnet',
-                            nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 }, // The EVM Decimals Trap Fix
-                            rpcUrls: ['https://rpc.arc-network.io'],
-                            blockExplorerUrls: ['https://explorer.arc.io']
-                        }]
-                    });
-
-                    await p.send("eth_requestAccounts", []);
-                    wallet = await p.getSigner().getAddress();
-                    
-                    // Real Balance Fetch
-                    const b = await p.getBalance(wallet);
-                    document.getElementById('balUSDC').innerText = parseFloat(ethers.utils.formatEther(b)).toFixed(4) + " USDC";
-                    document.getElementById('connectBtn').innerText = wallet.substring(0,6)+"...";
-                    document.getElementById('dot').className = "status-dot bg-green-500";
-                    document.getElementById('statusTxt').innerText = "Connected";
-                    say("Wallet Authorized on Arc Testnet");
-                } catch(e) { say("Authorization Failed"); }
-            } else { alert("Please use Mises or MetaMask Mobile."); }
-        }
-
-        function executeAction() {
-            if(!wallet) return say("Connect wallet first");
-            const isDemo = document.getElementById('demoMode').checked;
-            
-            music.pause();
-            say(isDemo ? "Simulating Execution Flow" : "Executing Real Transaction");
-            
-            setTimeout(() => {
-                say("Route successful. Hash generated.");
-                alert("Success! Transaction Hash: 0x" + Math.random().toString(16).slice(2));
-                music.play();
-            }, 3000);
+        function execute() {
+            const isDemo = document.getElementById('demoToggle').checked;
+            alert(isDemo ? "Running in Demo Mode!" : "Executing Real Transaction...");
         }
     </script>
 </body>
-                    </html>
+    </html>
     
