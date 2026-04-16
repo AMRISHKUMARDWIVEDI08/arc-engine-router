@@ -1,12 +1,10 @@
-export async function connectWallet() {
-  if (!window.ethereum) {
-    alert("install metamask");
-    return;
-  }
-
-  const accounts = await window.ethereum.request({
-    method: "eth_requestAccounts",
-  });
-
-  return accounts[0];
-}
+export const ARC_TESTNET = {
+  chainId: "0x4cef52",
+  chainName: "Arc Testnet",
+  nativeCurrency: {
+    name: "USDC",
+    symbol: "USDC",
+    decimals: 18
+  },
+  rpcUrls: ["https://rpc.arc.network"],
+};
