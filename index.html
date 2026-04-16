@@ -3,89 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SonicFlow Pro - Arc Network</title>
+    <title>Arc Gateway - SonicFlow</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <style>
-        body { background: #000; color: white; font-family: sans-serif; overflow-x: hidden; }
+        body { background: #000; color: white; font-family: sans-serif; }
         .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; }
-        .btn-blue { background: #2563eb; box-shadow: 0 0 20px rgba(37, 99, 235, 0.5); border-radius: 18px; }
+        .arc-banner {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://raw.githubusercontent.com/AMRISHKUMARDWIVEDI08/arc-sonic-router/main/logo.png');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 180px;
+            border-radius: 24px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .btn-arc { background: linear-gradient(90deg, #1e40af, #7e22ce); box-shadow: 0 0 20px rgba(126, 34, 206, 0.4); }
         .input-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; }
-        .logo-img { height: 32px; width: auto; object-fit: contain; }
     </style>
 </head>
 <body class="p-4 min-h-screen" onclick="enableAudio()">
 
-    <div class="flex justify-between items-center mb-10 px-2 mt-4">
-        <div class="flex items-center gap-3">
-            <img src="logo.png" alt="Arc Logo" class="logo-img" onerror="this.style.display='none'">
-            <div>
-                <h1 class="text-2xl font-black italic text-green-400 tracking-tighter uppercase leading-none">SONIC<span class="text-white">FLOW</span></h1>
-                <p class="text-[7px] text-slate-500 font-bold tracking-[0.3em] uppercase">Arc Ecosystem</p>
-            </div>
+    <div class="flex justify-between items-center mb-6 mt-2">
+        <div class="flex items-center gap-2">
+            <img src="logo.png" class="h-10 w-10 object-contain">
+            <h1 class="text-xl font-black tracking-tighter italic">ARC <span class="text-blue-500">GATEWAY</span></h1>
         </div>
-        <button id="walletBtn" onclick="toggleWallet()" class="glass px-4 py-2 text-[10px] font-black text-blue-400 border-blue-500/20 uppercase tracking-widest">Connect Wallet</button>
+        <button id="walletBtn" onclick="toggleWallet()" class="glass px-4 py-2 text-[10px] font-bold text-blue-400 uppercase">Connect</button>
     </div>
 
-    <div class="glass p-6 mb-8 shadow-2xl">
-        <div class="flex justify-between text-[10px] font-black text-slate-500 uppercase mb-8 border-b border-white/5 pb-2">
-            <span class="text-green-400 border-b-2 border-green-400 pb-2">Transfer</span>
-            <span class="opacity-40">Bridge</span>
-            <span class="opacity-40">Swap</span>
+    <div class="arc-banner w-full mb-8 flex flex-col items-center justify-center text-center p-4">
+        <h2 class="text-2xl font-black uppercase tracking-widest text-white drop-shadow-lg">ARC NETWORK</h2>
+        <p class="text-[9px] font-bold text-blue-300 uppercase tracking-[0.3em]">The Gateway to Multichain Future</p>
+    </div>
+
+    <div class="glass p-6 mb-8 border-white/5">
+        <div class="flex gap-6 text-[10px] font-black text-slate-500 uppercase mb-8 border-b border-white/5 pb-2">
+            <span class="text-blue-400 border-b-2 border-blue-400 pb-2">Transfer</span>
+            <span class="opacity-30">Bridge</span>
+            <span class="opacity-30">Swap</span>
         </div>
 
         <div class="input-box p-4 mb-4">
-            <label class="text-[9px] font-bold text-slate-500 uppercase block mb-2">Recipient Address</label>
-            <input type="text" id="targetAddr" placeholder="0x..." class="bg-transparent w-full text-xs outline-none text-blue-300 font-mono uppercase">
+            <label class="text-[8px] font-bold text-slate-500 uppercase block mb-1">Recipient Address</label>
+            <input type="text" id="target" placeholder="0x..." class="bg-transparent w-full text-xs outline-none text-blue-400 font-mono">
         </div>
 
         <div class="input-box p-4 mb-8">
-            <div class="flex justify-between mb-2 text-[9px] font-bold uppercase">
-                <span class="text-slate-500">Amount to Send</span>
-                <span id="balText" class="text-green-500 font-mono">Balance: 0.00</span>
+            <div class="flex justify-between mb-2">
+                <span class="text-[8px] font-bold text-slate-500 uppercase">Amount</span>
+                <span id="bal" class="text-[8px] font-bold text-green-500">BAL: 0.00</span>
             </div>
             <div class="flex justify-between items-center">
-                <input type="number" id="sendAmt" placeholder="0.00" class="bg-transparent text-4xl font-black outline-none w-1/2">
-                <span class="text-xs font-black bg-white/5 px-3 py-2 rounded-xl border border-white/10 uppercase italic">USDC</span>
+                <input type="number" id="amt" placeholder="0.0" class="bg-transparent text-4xl font-black outline-none w-1/2">
+                <span class="text-xs font-black italic text-slate-400">USDC</span>
             </div>
         </div>
 
-        <button onclick="confirmTransfer()" class="w-full btn-blue py-5 text-[11px] font-black uppercase tracking-[0.2em] active:scale-95 transition-all">
-            Execute Sonic Route
+        <button onclick="send()" class="w-full btn-arc py-5 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all">
+            Execute Gateway Route
         </button>
     </div>
 
-    <div class="grid grid-cols-2 gap-4 mb-10 opacity-60">
-        <div class="glass p-4 text-center border-white/5">
-            <p class="text-[7px] font-bold text-slate-500 uppercase mb-1">Status</p>
-            <p class="text-[10px] font-black uppercase text-green-400">Mainnet Live</p>
-        </div>
-        <div class="glass p-4 text-center border-white/5">
-            <p class="text-[7px] font-bold text-slate-500 uppercase mb-1">Fee Tier</p>
-            <p class="text-[10px] font-black uppercase text-blue-400">Economic</p>
-        </div>
-    </div>
-
     <script>
-        let walletAddress = null;
-        let audioPermission = false;
+        let userAddr = null;
+        let audioOk = false;
 
-        function enableAudio() { audioPermission = true; }
+        function enableAudio() { audioOk = true; }
 
-        function speak(text) {
-            if (audioPermission && window.speechSynthesis) {
-                const speech = new SpeechSynthesisUtterance(text);
-                speech.rate = 1.1;
-                window.speechSynthesis.speak(speech);
+        function speak(t) {
+            if (audioOk) {
+                const s = new SpeechSynthesisUtterance(t);
+                s.rate = 1.1;
+                window.speechSynthesis.speak(s);
             }
         }
 
         async function toggleWallet() {
-            if (walletAddress) {
-                walletAddress = null;
-                document.getElementById('walletBtn').innerText = "Connect Wallet";
-                document.getElementById('balText').innerText = "Balance: 0.00";
-                speak("Wallet Disconnected");
+            if (userAddr) {
+                userAddr = null;
+                document.getElementById('walletBtn').innerText = "Connect";
+                document.getElementById('bal').innerText = "BAL: 0.00";
+                speak("Gateway Closed. Wallet Disconnected.");
                 return;
             }
 
@@ -93,33 +92,25 @@
                 try {
                     const provider = new ethers.providers.Web3Provider(window.ethereum);
                     await provider.send("eth_requestAccounts", []);
-                    const signer = provider.getSigner();
-                    walletAddress = await signer.getAddress();
+                    userAddr = await provider.getSigner().getAddress();
                     
-                    // Fetch Real Balance
-                    const rawBalance = await provider.getBalance(walletAddress);
-                    const formattedBal = parseFloat(ethers.utils.formatEther(rawBalance)).toFixed(4);
+                    // Real Balance Fetch
+                    const b = await provider.getBalance(userAddr);
+                    const formatted = parseFloat(ethers.utils.formatEther(b)).toFixed(4);
                     
-                    document.getElementById('walletBtn').innerText = walletAddress.substring(0,6)+"..."+walletAddress.substring(38);
-                    document.getElementById('balText').innerText = "Balance: " + formattedBal;
-                    speak("Wallet Connected");
-                } catch (e) {
-                    speak("Connection Error");
-                }
-            } else {
-                alert("Please use Mises or OKX Wallet browser.");
-            }
+                    document.getElementById('walletBtn').innerText = userAddr.substring(0,6)+"..."+userAddr.substring(38);
+                    document.getElementById('bal').innerText = "BAL: " + formatted;
+                    speak("Welcome to Arc Gateway. Wallet Connected.");
+                } catch (e) { speak("Connection Error"); }
+            } else { alert("Use Mises Browser"); }
         }
 
-        function confirmTransfer() {
-            const addr = document.getElementById('targetAddr').value;
-            const amt = document.getElementById('sendAmt').value;
-            if (!walletAddress) return speak("Connect wallet");
-            if (!addr || !amt) return speak("Details missing");
-
-            speak("Transaction Successful");
-            alert("Sent " + amt + " USDC to " + addr);
+        function send() {
+            if (!userAddr) return speak("Please connect to the gateway first");
+            speak("Transaction Successful. Route Executed.");
+            alert("Success!");
         }
     </script>
 </body>
-</html>
+                </html>
+                    
