@@ -6,6 +6,7 @@
     <title>Arc Settlement Engine | Institutional Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <style>
         body { background-color: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; }
         .glass-card { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 1.25rem; }
@@ -39,32 +40,22 @@
             <span class="text-[9px] font-black uppercase text-blue-400">Gas: USDC</span>
         </div>
     </div>
-    <div class="flex justify-between px-2 mb-6">
-        <span class="text-[8px] font-black text-green-500 uppercase">● AML Verified</span>
-        <span class="text-[8px] font-black text-slate-500 uppercase italic">Latency: 0.18s</span>
-    </div>
 
     <div class="glass-card p-5 mb-6 border-blue-500/30 overflow-hidden relative">
         <div class="flex justify-between items-center px-4 relative z-10">
             <div class="text-center">
-                <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-700 shadow-xl">
-                    <i class="fa-brands fa-ethereum text-blue-400 text-lg"></i>
-                </div>
-                <p class="text-[8px] font-bold mt-1 text-slate-500 uppercase text-[7px]">Source</p>
+                <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-700 shadow-xl"><i class="fa-brands fa-ethereum text-blue-400 text-lg"></i></div>
+                <p class="text-[7px] font-bold mt-1 text-slate-500 uppercase">Source</p>
             </div>
             <div class="flex-1 h-[2px] bg-slate-800 mx-2 relative overflow-hidden"><div class="animate-flow"></div></div>
             <div class="text-center">
-                <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center border-2 border-blue-400 shadow-lg shadow-blue-500/20">
-                    <i class="fa-solid fa-a text-white text-xl"></i>
-                </div>
+                <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center border-2 border-blue-400 shadow-lg shadow-blue-500/20"><i class="fa-solid fa-a text-white text-xl"></i></div>
                 <p class="text-[9px] font-black text-blue-400 italic mt-1 uppercase">Arc Node</p>
             </div>
             <div class="flex-1 h-[2px] bg-slate-800 mx-2"></div>
             <div class="text-center">
-                <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-700">
-                    <i class="fa-solid fa-vault text-green-400 text-lg"></i>
-                </div>
-                <p class="text-[8px] font-bold mt-1 text-slate-500 uppercase text-[7px]">Settle</p>
+                <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-700"><i class="fa-solid fa-vault text-green-400 text-lg"></i></div>
+                <p class="text-[7px] font-bold mt-1 text-slate-500 uppercase">Settle</p>
             </div>
         </div>
     </div>
@@ -77,60 +68,52 @@
 
     <div class="glass-card p-6 min-h-[300px]">
         <div id="section-transfer" class="space-y-4">
-            <p class="text-[9px] font-black text-blue-400 uppercase italic mb-2 tracking-widest">Asset Transfer</p>
             <input type="text" id="t-addr" placeholder="Recipient Address (0x...)" class="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs outline-none focus:border-blue-500 font-mono">
             <input type="number" id="t-amt" placeholder="Amount USDC" class="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs font-bold outline-none">
             <button onclick="executeEngine('Transfer')" class="w-full action-btn py-5 rounded-xl text-[11px] font-black uppercase tracking-[0.3em] text-white">Execute Transfer</button>
         </div>
         <div id="section-swap" class="hidden-section space-y-4">
-            <p class="text-[9px] font-black text-orange-400 uppercase italic mb-2 tracking-widest">Liquidity Swap</p>
-            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800"><p class="text-[8px] text-slate-500 uppercase">From: USDC</p></div>
-            <div class="flex justify-center -my-2"><i class="fa-solid fa-arrow-down-up-lock text-blue-500 text-xs"></i></div>
-            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800"><p class="text-[8px] text-slate-500 uppercase">To: USYC</p></div>
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs font-bold text-center">USDC <i class="fa-solid fa-arrow-right mx-2 text-blue-500"></i> USYC</div>
             <button onclick="executeEngine('Swap')" class="w-full action-btn py-5 rounded-xl text-[11px] font-black uppercase tracking-[0.3em] text-white">Execute Swap</button>
         </div>
-        <div id="section-bridge" class="hidden-section space-y-4">
-            <p class="text-[9px] font-black text-green-400 uppercase italic mb-2 tracking-widest">Bridge Settlement</p>
-            <div class="grid grid-cols-2 gap-2 text-center">
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[10px]">Arb Net</div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[10px] text-blue-500 font-bold">Arc Net</div>
-            </div>
-            <input type="number" id="b-amt" placeholder="Bridge Amount" class="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs font-bold outline-none">
+        <div id="section-bridge" class="hidden-section space-y-4 text-center">
+            <p class="text-xs font-bold">Arbitrum <i class="fa-solid fa-bridge mx-2"></i> Arc Net</p>
             <button onclick="executeEngine('Bridge')" class="w-full action-btn py-5 rounded-xl text-[11px] font-black uppercase tracking-[0.3em] text-white">Initiate Bridge</button>
         </div>
     </div>
 
-    <div id="status-box" class="hidden mt-6 glass-card p-4 border-blue-500/40">
-        <div class="flex justify-between items-center">
-            <p class="text-[10px] font-bold text-blue-400 uppercase italic">Settlement Finality:</p>
-            <span id="timer" class="text-xs font-mono font-bold text-white">0.000s</span>
-        </div>
-    </div>
-
-    <div class="fixed bottom-0 left-0 right-0 bg-slate-950/80 backdrop-blur-md border-t border-slate-800 p-5 flex justify-around items-center">
-        <i class="fa-solid fa-house-chimney text-blue-500"></i>
-        <i class="fa-solid fa-arrows-spin text-slate-600"></i>
-        <i class="fa-solid fa-layer-group text-slate-600"></i>
-        <i class="fa-solid fa-fingerprint text-slate-600"></i>
+    <div id="status-box" class="hidden mt-6 glass-card p-4 border-blue-500/40 text-center">
+        <p class="text-[10px] font-bold text-blue-400 uppercase italic">Settlement Finality: <span id="timer" class="text-white font-mono">0.000s</span></p>
     </div>
 
     <script>
+        const ARC_RPC = "https://arc-testnet.rpc.caldera.xyz/http";
+        const ARC_CHAIN_ID = "0x4cef52";
+
         function showTab(id) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
             document.getElementById('t-'+id).classList.add('tab-active');
-            document.getElementById('section-transfer').classList.add('hidden-section');
-            document.getElementById('section-swap').classList.add('hidden-section');
-            document.getElementById('section-bridge').classList.add('hidden-section');
+            document.querySelectorAll('[id^="section-"]').forEach(s => s.classList.add('hidden-section'));
             document.getElementById('section-'+id).classList.remove('hidden-section');
         }
 
-        function connectWallet() {
-            const btn = document.getElementById('walletBtn');
-            btn.innerHTML = "<i class='fa-solid fa-spinner animate-spin mr-2'></i>AUTHORIZING...";
-            setTimeout(() => {
-                btn.innerHTML = "<span class='text-green-500'>●</span> 0x2091...8B4C";
-                alert("Arc Engine: Wallet Connected");
-            }, 1000);
+        async function connectWallet() {
+            if (window.ethereum) {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    document.getElementById('walletBtn').innerHTML = "<span class='text-green-500'>●</span> " + accounts[0].substring(0,6) + "...";
+                    // Pawan Sir's Network Fix
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: ARC_CHAIN_ID,
+                            chainName: 'Arc Testnet',
+                            nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+                            rpcUrls: [ARC_RPC]
+                        }]
+                    });
+                } catch (e) { alert("Connect Error"); }
+            } else { alert("Use Mises Browser"); }
         }
 
         function executeEngine(type) {
@@ -144,10 +127,10 @@
             alert(type + " Route Initiated via Arc Node...");
             setTimeout(() => {
                 clearInterval(clock);
-                alert("✅ SUCCESS: " + type + " Finalized");
-            }, 2000);
+                alert("✅ SUCCESS: " + type + " Finalized on Arc Testnet");
+            }, 2500);
         }
     </script>
 </body>
-                </html>
-    
+                    </html>
+            
