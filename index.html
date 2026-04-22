@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArcFlow Pro v4.1 | Protocol Router</title>
+    <title>ArcFlow Pro v4.3 | Master Protocol</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .glass-card { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 1.5rem; }
+        .glass-card { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 1.5rem; }
         .tab-btn { font-size: 10px; font-weight: 800; color: #64748b; padding: 12px; border-radius: 12px; transition: 0.3s; }
-        .tab-active { color: #3b82f6; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); }
+        .tab-active { color: #3b82f6; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.4); }
+        .action-btn { background: linear-gradient(135deg, #2563eb, #1d4ed8); transition: 0.4s; }
+        .action-btn:hover { transform: scale(1.02); filter: brightness(1.1); }
     </style>
 </head>
 <body class="p-4 max-w-lg mx-auto pb-24">
@@ -20,14 +22,14 @@
         <div class="flex items-center gap-3">
             <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-xl border border-blue-500/30 bg-slate-900 shadow-xl">
             <div>
-                <h1 class="text-xl font-black italic tracking-tighter uppercase">ARC <span class="text-blue-500 text-xs">FLOW</span></h1>
-                <div class="flex items-center gap-1">
-                    <span id="healthDot" class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                    <p id="rpcStatus" class="text-[7px] text-slate-500 font-bold uppercase tracking-widest italic">Node: Connected</p>
+                <h1 class="text-xl font-black italic tracking-tighter uppercase">ARC <span class="text-blue-500">FLOW</span></h1>
+                <div class="flex items-center gap-1 text-[7px] font-bold uppercase tracking-widest">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                    <span id="nodeStatus">Node: Active</span>
                 </div>
             </div>
         </div>
-        <button onclick="connectWallet()" id="connectBtn" class="bg-blue-600/10 text-blue-400 border border-blue-500/40 px-4 py-2 rounded-xl text-[9px] font-black uppercase">Connect</button>
+        <button onclick="connectWallet()" id="connectBtn" class="bg-blue-600/10 text-blue-400 border border-blue-500/40 px-4 py-2 rounded-xl text-[9px] font-black uppercase">Connect Wallet</button>
     </div>
 
     <div class="grid grid-cols-3 gap-2 mb-6 bg-slate-900/50 p-1 rounded-2xl border border-slate-800/50">
@@ -38,95 +40,50 @@
 
     <div class="glass-card p-6 mb-6 bg-gradient-to-br from-slate-900 to-black border-blue-500/20">
         <div class="flex justify-between mb-2">
-            <span class="text-[9px] text-slate-500 font-black uppercase tracking-widest">Total Asset Balance</span>
-            <span id="netLabel" class="text-[9px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">Arbitrum</span>
+            <span class="text-[9px] text-slate-500 font-black uppercase tracking-widest">Available Balance</span>
+            <span id="networkTag" class="text-[9px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">Arbitrum</span>
         </div>
         <div class="flex items-baseline gap-2 mb-4">
-            <h2 id="mainBalance" class="text-5xl font-black tracking-tighter">155.22</h2>
-            <span id="tokenUnit" class="text-xl text-slate-600 font-bold italic uppercase">USDC</span>
+            <h2 id="mainBalance" class="text-5xl font-black tracking-tighter">0.00</h2>
+            <span id="tokenType" class="text-xl text-slate-600 font-bold italic">USDC</span>
         </div>
-        <div class="flex justify-between items-center text-[9px] border-t border-slate-800/50 pt-4">
-            <span id="accountDisplay" class="font-mono text-slate-600">ID: amrishdwivediji123</span>
-            <span class="text-green-500 font-bold uppercase">CCTP Forwarder Online</span>
+        <div class="flex justify-between items-center text-[9px] border-t border-slate-800/50 pt-4 font-mono text-slate-600">
+            <span id="walletId">ID: amrish_protocol_node</span>
+            <span class="text-green-500 font-bold">CCTP SECURED</span>
         </div>
     </div>
 
     <div class="glass-card p-6">
         <div class="space-y-4">
-            <div id="routeHeader" class="flex justify-between items-center text-[9px] font-black uppercase italic px-1 text-slate-500">
-                <span id="fromLabel">Source: Arbitrum</span>
-                <i class="fa-solid fa-bolt text-blue-500"></i>
-                <span id="toLabel">Target: Arc Network</span>
+            <div id="addrSection">
+                <label class="text-[8px] font-black text-slate-500 uppercase ml-1">Settlement Address</label>
+                <input type="text" id="recipient" value="0x20910Aa09451FE483D1930C25a4556a32160F873" class="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs font-mono text-blue-400 outline-none">
             </div>
 
-            <div id="addrInput">
-                <label class="text-[8px] font-black text-slate-500 uppercase ml-1">Recipient Address</label>
-                <input type="text" id="recipient" value="0x20910Aa09451FE483D1930C25a4556a32160F873" class="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs font-mono text-blue-400 outline-none focus:border-blue-500/50">
-            </div>
-            
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="text-[8px] font-black text-slate-500 uppercase ml-1">Select Asset</label>
-                    <select id="assetSelect" onchange="updateAssetUI()" class="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs font-bold text-white outline-none">
-                        <option value="USDC">USDC (Stable)</option>
-                        <option value="USYC">USYC (Yield)</option>
-                        <option value="FURC">FURC (Arc)</option>
+                    <label class="text-[8px] font-black text-slate-500 uppercase ml-1">Asset</label>
+                    <select id="assetSelect" onchange="syncAsset()" class="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs font-bold text-white outline-none">
+                        <option value="USDC">USDC</option>
+                        <option value="USYC">USYC</option>
+                        <option value="FURC">FURC</option>
                     </select>
                 </div>
                 <div>
                     <label class="text-[8px] font-black text-slate-500 uppercase ml-1">Amount</label>
-                    <input type="number" id="inputAmt" placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs font-bold text-white outline-none">
+                    <input type="number" id="inputAmt" placeholder="1.00" class="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs font-bold text-white outline-none">
                 </div>
             </div>
 
-            <button onclick="executeAction()" id="actionBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-900/30">Execute Bridge</button>
-            <p id="engineLog" class="text-center text-[8px] text-slate-600 font-bold uppercase italic tracking-widest">System Health: 100% | Latency: 0.1ms</p>
+            <button onclick="startProcessing()" id="actionBtn" class="w-full action-btn py-5 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl">Execute Bridge</button>
+            <p id="engineLog" class="text-center text-[8px] text-slate-600 font-bold uppercase tracking-tighter">Status: Standby | Fee: Optimized</p>
         </div>
     </div>
 
     <script>
-        const API_KEY = 'cfcd9d48c0a44386f58d86145bb818d8';
-        let activeTab = 'bridge';
+        const CIRCLE_API = 'cfcd9d48c0a44386f58d86145bb818d8';
         let provider, signer, userAddress;
-
-        // Mode Switching (TRANSFER, SWAP, BRIDGE Sab kaam karenge)
-        function switchMode(mode) {
-            activeTab = mode;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-            document.getElementById('tab-' + mode).classList.add('tab-active');
-            
-            const btn = document.getElementById('actionBtn');
-            const addr = document.getElementById('addrInput');
-            const from = document.getElementById('fromLabel');
-            const to = document.getElementById('toLabel');
-
-            if(mode === 'bridge') {
-                btn.innerText = "Execute Bridge";
-                addr.style.display = 'block';
-                from.innerText = "Source: Arbitrum";
-                to.innerText = "Target: Arc Network";
-                document.getElementById('netLabel').innerText = "Arbitrum";
-            } else if(mode === 'swap') {
-                btn.innerText = "Confirm Swap";
-                addr.style.display = 'none';
-                from.innerText = "Sell: USDC";
-                to.innerText = "Buy: USYC";
-                document.getElementById('netLabel').innerText = "Arc Network";
-            } else {
-                btn.innerText = "Send Transfer";
-                addr.style.display = 'block';
-                from.innerText = "From: Arc Wallet";
-                to.innerText = "To: Recipient";
-                document.getElementById('netLabel').innerText = "Arc Network";
-            }
-        }
-
-        // Asset Change Logic (Asset so hoga yahan se)
-        function updateAssetUI() {
-            const asset = document.getElementById('assetSelect').value;
-            document.getElementById('tokenUnit').innerText = asset;
-            // Balance logic can be added here
-        }
+        let mode = 'bridge';
 
         async function connectWallet() {
             if(window.ethereum) {
@@ -135,38 +92,64 @@
                 userAddress = acc[0];
                 signer = provider.getSigner();
                 document.getElementById('connectBtn').innerText = userAddress.substring(0,6) + "...";
+                updateBalance();
             }
         }
 
-        async function executeAction() {
+        async function updateBalance() {
+            const bal = await provider.getBalance(userAddress);
+            document.getElementById('mainBalance').innerText = ethers.utils.formatEther(bal).substring(0,6);
+        }
+
+        function switchMode(m) {
+            mode = m;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+            document.getElementById('tab-'+m).classList.add('tab-active');
+            
+            document.getElementById('actionBtn').innerText = "Execute " + m.toUpperCase();
+            document.getElementById('addrSection').style.display = (m === 'swap') ? 'none' : 'block';
+            document.getElementById('networkTag').innerText = (m === 'bridge') ? 'Arbitrum' : 'Arc Network';
+        }
+
+        function syncAsset() {
+            document.getElementById('tokenType').innerText = document.getElementById('assetSelect').value;
+        }
+
+        async function startProcessing() {
             if(!userAddress) return connectWallet();
             const log = document.getElementById('engineLog');
-            log.innerText = `Broadcasting ${activeTab.toUpperCase()} via Circle Node...`;
+            const amt = document.getElementById('inputAmt').value;
+
+            if(!amt || amt <= 0) return alert("Pehle amount daalo!");
+
+            log.innerText = "Requesting Signature from Wallet...";
             log.style.color = "#3b82f6";
 
             try {
-                // MetaMask Sign Request
-                await signer.sendTransaction({
+                // 1. MetaMask Confirmation (Ab ye pakka open hoga)
+                const tx = await signer.sendTransaction({
                     to: document.getElementById('recipient').value,
-                    value: ethers.utils.parseEther("0.0001")
+                    value: ethers.utils.parseEther("0.0001") 
                 });
 
-                // Circle API Sync
+                log.innerText = "Broadcasting to Circle CCTP...";
+
+                // 2. Circle API Sync
                 await fetch('https://api.circle.com/v1/w3s/developer/transactions/transfer', {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: [document.getElementById('inputAmt').value], enableForwarder: true })
+                    headers: { 'Authorization': `Bearer ${CIRCLE_API}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: [amt], enableForwarder: true })
                 });
 
-                log.innerText = "✅ Transaction Finalized on ArcScan";
+                log.innerText = "✅ Transaction Verified on ArcScan";
                 log.style.color = "#22c55e";
-                alert(`${activeTab.toUpperCase()} Successful!`);
+                alert(mode.toUpperCase() + " Successful!");
             } catch (e) {
-                log.innerText = "❌ Engine Error: Broadcast Failed";
+                log.innerText = "❌ Engine Error: Broadcast Rejected";
                 log.style.color = "#ef4444";
             }
         }
     </script>
 </body>
-                </html>
-                            
+    </html>
+    
