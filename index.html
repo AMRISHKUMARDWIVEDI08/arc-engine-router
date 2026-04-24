@@ -3,84 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARC ENGINE ROUTER | Institutional Node</title>
+    <title>ARC ENGINE ROUTER | Institutional Protocol</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background-color: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .glass-card { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 1.5rem; }
-        .tab-btn { font-size: 10px; font-weight: 900; color: #64748b; padding: 12px; border-radius: 12px; transition: 0.3s; text-transform: uppercase; }
-        .tab-active { color: #3b82f6; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.4); }
+        .glass-card { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 1.5rem; backdrop-filter: blur(10px); }
+        .tab-btn { font-size: 10px; font-weight: 900; color: #64748b; padding: 12px; border-radius: 12px; transition: 0.3s; text-transform: uppercase; border: 1px solid transparent; }
+        .tab-active { color: #3b82f6; background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); }
         .input-field { background: #0f172a; border: 1px solid #1e293b; padding: 14px; border-radius: 14px; width: 100%; color: white; font-weight: bold; outline: none; font-size: 13px; }
-        .input-field:focus { border-color: #3b82f6; }
-        .glow-text { text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+        .glow-text { text-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        .arc-logo-box { background: linear-gradient(135deg, #3b82f6, #1d4ed8); box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
     </style>
 </head>
-<body class="p-4 max-w-lg mx-auto pb-20">
+<body class="p-4 max-w-lg mx-auto pb-24">
 
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-xl font-black italic tracking-tighter uppercase text-white">
-                ARC <span class="text-blue-500">ENGINE</span> ROUTER
-            </h1>
-            <p id="statusTxt" class="text-[8px] text-slate-500 font-bold uppercase tracking-widest italic">● Engine: Standby</p>
+    <div class="flex justify-between items-center mb-8 pt-2">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 arc-logo-box rounded-2xl flex items-center justify-center">
+                <i class="fa-solid fa-layer-group text-white text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-black italic tracking-tighter uppercase text-white leading-none">
+                    ARC <span class="text-blue-500">ENGINE</span>
+                </h1>
+                <p id="statusTxt" class="text-[8px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-1 italic">● Node: Standby</p>
+            </div>
         </div>
-        <button onclick="connectWallet()" id="connectBtn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-900/40">Connect Wallet</button>
+        <button onclick="connectWallet()" id="connectBtn" class="bg-blue-600 hover:bg-blue-700 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-900/40 transition-all active:scale-95">Connect Wallet</button>
     </div>
 
-    <div class="glass-card p-6 mb-6 bg-gradient-to-br from-slate-900 to-black border-blue-500/30">
+    <div class="glass-card p-7 mb-6 bg-gradient-to-br from-slate-900 via-slate-950 to-black relative">
         <div class="flex justify-between mb-2">
             <span class="text-[9px] text-slate-500 font-black uppercase tracking-widest">Institutional Assets</span>
-            <span id="chainTag" class="text-[8px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">OFFLINE</span>
+            <span id="chainTag" class="text-[8px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 uppercase">Network Offline</span>
         </div>
         <div class="flex items-baseline gap-2 mb-4">
-            <h2 id="balanceDisp" class="text-5xl font-black tracking-tighter text-white glow-text">0.00</h2>
-            <span id="tokenUnit" class="text-lg text-slate-600 font-bold italic uppercase">ETH</span>
+            <h2 id="balanceDisp" class="text-6xl font-black tracking-tighter text-white glow-text">0.00</h2>
+            <span id="tokenUnit" class="text-xl text-slate-600 font-bold italic uppercase">ETH</span>
         </div>
-        <div class="flex justify-between items-center text-[9px] border-t border-slate-800/50 pt-4 font-mono text-slate-500">
+        <div class="flex justify-between items-center text-[9px] border-t border-slate-800/50 pt-5 font-mono text-slate-500 uppercase">
             <span id="walletName">ID: AWAITING_AUTH</span>
-            <span class="text-green-500 font-bold tracking-widest uppercase italic">Verified Engine</span>
+            <span class="text-green-500 font-bold italic tracking-widest">Verified Engine</span>
         </div>
     </div>
 
-    <div class="grid grid-cols-3 gap-2 mb-6 bg-slate-900/50 p-1 rounded-2xl border border-slate-800/50">
+    <div class="grid grid-cols-3 gap-2 mb-6 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800/50 shadow-inner">
         <button onclick="switchMode('bridge')" id="tab-bridge" class="tab-btn tab-active">Bridge</button>
         <button onclick="switchMode('swap')" id="tab-swap" class="tab-btn">Swap</button>
         <button onclick="switchMode('send')" id="tab-send" class="tab-btn">Send</button>
     </div>
 
     <div class="glass-card p-6 shadow-2xl">
-        <div class="space-y-4">
-            <div id="routeMap" class="flex justify-between items-center text-[9px] font-black uppercase italic px-1 opacity-60">
+        <div class="space-y-5">
+            <div id="routeMap" class="flex justify-between items-center text-[10px] font-black uppercase italic px-1 opacity-60">
                 <span id="fromText">From: Arbitrum</span>
-                <i class="fa-solid fa-arrow-right-long text-blue-500"></i>
-                <span id="toText">To: Arc Network</span>
+                <div class="h-[1px] flex-grow mx-4 bg-blue-500/20"></div>
+                <span id="toText" class="text-blue-500">To: Arc Network</span>
             </div>
 
             <div id="addrBox">
-                <label class="text-[8px] font-black text-slate-500 uppercase ml-1 tracking-widest">Settlement Address</label>
-                <input type="text" id="recipient" value="0x20910Aa09451FE483D1930C25a4556a32160F873" class="input-field font-mono text-blue-400">
+                <label class="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Target Node Address</label>
+                <input type="text" id="recipient" value="0x20910Aa09451FE483D1930C25a4556a32160F873" class="input-field font-mono text-blue-400 mt-1">
             </div>
             
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="text-[8px] font-black text-slate-500 uppercase ml-1">Asset</label>
-                    <select id="assetSelect" onchange="updateTokenUI()" class="input-field text-xs font-bold">
+                    <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Asset Class</label>
+                    <select id="assetSelect" onchange="updateTokenUI()" class="input-field text-xs font-bold mt-1">
                         <option value="ETH">Native ETH</option>
                         <option value="USDC">USDC (Circle)</option>
                         <option value="USYC">USYC (Yield)</option>
                     </select>
                 </div>
                 <div>
-                    <label class="text-[8px] font-black text-slate-500 uppercase ml-1">Amount</label>
-                    <input type="number" id="inputAmt" placeholder="0.00" class="input-field text-xs font-bold">
+                    <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Volume</label>
+                    <input type="number" id="inputAmt" placeholder="0.00" class="input-field text-xs font-bold mt-1">
                 </div>
             </div>
 
-            <button onclick="executeAction()" id="actionBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl text-[11px] font-black uppercase tracking-widest shadow-xl transition-all mt-2">Authorize Engine</button>
+            <button onclick="executeAction()" id="actionBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-4.5 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-600/10 transition-all mt-2 active:scale-[0.98]">Authorize Engine</button>
             <p id="log" class="text-center text-[8px] text-slate-600 font-bold uppercase mt-2 italic">System Health: 100% | Latency: 0.1ms</p>
         </div>
+    </div>
+
+    <div class="mt-8 text-center">
+        <p class="text-[7px] text-slate-700 font-black uppercase tracking-[0.6em]">Arc Institutional Router v5.5 Secured</p>
     </div>
 
     <script>
@@ -94,26 +104,22 @@
                     userAddress = accounts[0];
                     signer = provider.getSigner();
 
-                    // Update UI
-                    document.getElementById('walletName').innerText = "ID: AMRISH_PRO_NODE_" + userAddress.substring(34).toUpperCase();
+                    document.getElementById('walletName').innerText = "NODE: " + userAddress.substring(0, 12).toUpperCase() + "...";
                     document.getElementById('connectBtn').innerText = userAddress.substring(0, 6) + "...";
-                    document.getElementById('statusTxt').innerText = "● Engine: Connected";
-                    document.getElementById('statusTxt').className = "text-[8px] text-green-500 font-bold uppercase tracking-widest italic";
-                    document.getElementById('chainTag').innerText = "ACTIVE";
+                    document.getElementById('statusTxt').innerText = "● Node: Live & Secure";
+                    document.getElementById('statusTxt').style.color = "#22c55e";
+                    document.getElementById('chainTag').innerText = "Active Mainnet";
                     document.getElementById('actionBtn').innerText = "EXECUTE " + currentMode.toUpperCase();
                     
                     updateBalance();
-                } catch (e) { console.error("Login Failed", e); }
-            } else {
-                alert("Mises Browser ya MetaMask use karein!");
-            }
+                } catch (e) { console.error(e); }
+            } else { alert("Mises Browser use karein!"); }
         }
 
         async function updateBalance() {
             if(!userAddress) return;
             const bal = await provider.getBalance(userAddress);
-            const formatted = ethers.utils.formatEther(bal);
-            document.getElementById('balanceDisp').innerText = formatted.substring(0, 6);
+            document.getElementById('balanceDisp').innerText = parseFloat(ethers.utils.formatEther(bal)).toFixed(4);
         }
 
         function updateTokenUI() {
@@ -128,12 +134,12 @@
             const addrSection = document.getElementById('addrBox');
             if (mode === 'swap') {
                 addrSection.style.display = 'none';
-                document.getElementById('fromText').innerText = "Sell: USDC";
-                document.getElementById('toText').innerText = "Buy: ETH";
+                document.getElementById('fromText').innerText = "USDC";
+                document.getElementById('toText').innerText = "ETH";
             } else {
                 addrSection.style.display = 'block';
-                document.getElementById('fromText').innerText = mode === 'bridge' ? "From: Arbitrum" : "From: My Wallet";
-                document.getElementById('toText').innerText = mode === 'bridge' ? "To: Arc Network" : "To: Receiver";
+                document.getElementById('fromText').innerText = mode === 'bridge' ? "Arbitrum" : "Wallet";
+                document.getElementById('toText').innerText = mode === 'bridge' ? "Arc Network" : "Receiver";
             }
             if (userAddress) document.getElementById('actionBtn').innerText = "EXECUTE " + mode.toUpperCase();
         }
@@ -142,13 +148,9 @@
             if (!userAddress) return connectWallet();
             const log = document.getElementById('log');
             const amt = document.getElementById('inputAmt').value;
-            
-            if (!amt || amt <= 0) {
-                alert("Amount daalein!");
-                return;
-            }
+            if (!amt || amt <= 0) { alert("Invalid Volume!"); return; }
 
-            log.innerText = `INITIATING ${currentMode.toUpperCase()}...`;
+            log.innerText = "PROCESSING INSTITUTIONAL " + currentMode.toUpperCase() + "...";
             log.style.color = "#3b82f6";
 
             try {
@@ -156,15 +158,15 @@
                     to: document.getElementById('recipient').value,
                     value: ethers.utils.parseUnits(amt, "ether")
                 });
-                log.innerText = "✅ TRANSACTION SUCCESSFUL";
+                log.innerText = "✅ DISPATCHED SUCCESSFULLY";
                 log.style.color = "#22c55e";
                 updateBalance();
             } catch (e) {
-                log.innerText = "❌ USER REJECTED / ERROR";
+                log.innerText = "❌ SECURITY REJECTION";
                 log.style.color = "#ef4444";
             }
         }
     </script>
 </body>
     </html>
-                
+    
