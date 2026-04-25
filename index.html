@@ -10,11 +10,12 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background-color: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .glass-card { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 1.5rem; backdrop-filter: blur(10px); }
+        .glass-card { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 1.5rem; backdrop-filter: blur(12px); }
         .tab-btn { font-size: 11px; font-weight: 900; color: #64748b; padding: 12px; border-radius: 12px; transition: 0.3s; text-transform: uppercase; border: 1px solid transparent; }
         .tab-active { color: #3b82f6; background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); }
         .input-field { background: #0f172a; border: 1px solid #1e293b; padding: 14px; border-radius: 14px; width: 100%; color: white; font-weight: bold; outline: none; font-size: 13px; }
         .glow-blue { text-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+        .success-box { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 12px; padding: 10px; display: none; }
     </style>
 </head>
 <body class="p-4 max-w-lg mx-auto pb-24">
@@ -34,8 +35,8 @@
 
     <div class="glass-card p-7 mb-6 bg-gradient-to-br from-slate-900 via-slate-950 to-black relative">
         <div class="flex justify-between mb-2">
-            <span class="text-[9px] text-slate-500 font-black uppercase tracking-widest">Institutional Assets</span>
-            <span id="chainTag" class="text-[8px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 uppercase">Network Offline</span>
+            <span class="text-[9px] text-slate-500 font-black uppercase tracking-widest tracking-tighter">Settlement Dashboard</span>
+            <span id="chainTag" class="text-[8px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 uppercase tracking-tighter">Ready</span>
         </div>
         <div class="flex items-baseline gap-2 mb-2">
             <h2 id="balanceDisp" class="text-6xl font-black tracking-tighter text-white glow-blue">0.0000</h2>
@@ -45,7 +46,7 @@
         
         <div class="flex justify-between items-center text-[9px] border-t border-slate-800/50 pt-5 font-mono text-slate-500 uppercase mt-4 tracking-tighter">
             <span id="walletName">ID: AWAITING_AUTH</span>
-            <span class="text-green-500 font-bold italic tracking-widest">Verified Engine</span>
+            <span class="text-green-500 font-bold italic tracking-widest">Secured v8.0</span>
         </div>
     </div>
 
@@ -63,16 +64,21 @@
                 <span id="toText" class="text-blue-500">To: Arc Network</span>
             </div>
 
+            <div id="successBox" class="success-box text-center">
+                <p class="text-green-500 text-[10px] font-black uppercase tracking-widest">Transaction Dispatched!</p>
+                <a id="txLink" href="#" target="_blank" class="text-blue-400 text-[8px] font-bold underline mt-1 block">VIEW ON EXPLORER</a>
+            </div>
+
             <div id="addrBox">
-                <label class="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Target Node Address</label>
+                <label class="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Receiver Address</label>
                 <input type="text" id="recipient" value="0x20910Aa09451FE483D1930C25a4556a32160F873" class="input-field font-mono text-blue-400 mt-1">
             </div>
             
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Asset Class</label>
+                    <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Asset</label>
                     <select id="assetSelect" onchange="updateTokenUI()" class="input-field text-xs font-bold mt-1">
-                        <option value="ETH">Native ETH</option>
+                        <option value="ETH">ETH</option>
                         <option value="USDC">USDC (Circle)</option>
                         <option value="USYC">USYC (Yield)</option>
                     </select>
@@ -83,7 +89,7 @@
                 </div>
             </div>
 
-            <button onclick="executeAction()" id="actionBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-4.5 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-600/10 transition-all mt-2 active:scale-[0.98]">Authorize Engine</button>
+            <button onclick="executeAction()" id="actionBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-4.5 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-600/10 transition-all mt-2 active:scale-[0.98]">Execute Engine</button>
             <p id="log" class="text-center text-[8px] text-slate-600 font-bold uppercase mt-2 italic">Status: Engine Operational</p>
         </div>
     </div>
@@ -100,23 +106,21 @@
                     userAddress = accounts[0];
                     signer = provider.getSigner();
 
-                    document.getElementById('walletName').innerText = "NODE_ID: " + userAddress.substring(0, 10).toUpperCase() + "...";
+                    document.getElementById('walletName').innerText = "NODE: " + userAddress.substring(0, 10).toUpperCase() + "...";
                     document.getElementById('connectBtn').innerText = userAddress.substring(0, 6) + "...";
-                    document.getElementById('statusTxt').innerText = "● Node: Live & Connected";
+                    document.getElementById('statusTxt').innerText = "● Node: Live";
                     document.getElementById('statusTxt').style.color = "#22c55e";
-                    document.getElementById('chainTag').innerText = "ACTIVE MAINNET";
+                    document.getElementById('chainTag').innerText = "ACTIVE";
                     
                     updateBalance();
                 } catch (e) { console.error(e); }
-            } else { alert("Mises Browser use karein!"); }
+            } else { alert("Please use Mises Browser!"); }
         }
 
         async function updateBalance() {
             if(!userAddress) return;
             const bal = await provider.getBalance(userAddress);
             const formatted = parseFloat(ethers.utils.formatEther(bal)).toFixed(4);
-            
-            // Age-Peeche Logic: Current balance updates, and old balance goes to Prev
             document.getElementById('prevBalance').innerText = lastBalance || formatted;
             document.getElementById('balanceDisp').innerText = formatted;
             lastBalance = formatted;
@@ -130,20 +134,17 @@
             currentMode = mode;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
             document.getElementById('tab-' + mode).classList.add('tab-active');
+            document.getElementById('successBox').style.display = 'none'; // Hide old receipt
             
             const addrSection = document.getElementById('addrBox');
             if (mode === 'swap') {
                 addrSection.style.display = 'none';
-                document.getElementById('fromText').innerText = "USDC (Sell)";
-                document.getElementById('toText').innerText = "ETH (Buy)";
-            } else if (mode === 'send') {
-                addrSection.style.display = 'block';
-                document.getElementById('fromText').innerText = "My Wallet";
-                document.getElementById('toText').innerText = "Receiver";
+                document.getElementById('fromText').innerText = "SELL: USDC";
+                document.getElementById('toText').innerText = "BUY: ETH";
             } else {
                 addrSection.style.display = 'block';
-                document.getElementById('fromText').innerText = "Arbitrum";
-                document.getElementById('toText').innerText = "Arc Network";
+                document.getElementById('fromText').innerText = mode === 'send' ? "MY WALLET" : "ARBITRUM";
+                document.getElementById('toText').innerText = mode === 'send' ? "RECEIVER" : "ARC NETWORK";
             }
             if (userAddress) document.getElementById('actionBtn').innerText = "EXECUTE " + mode.toUpperCase();
         }
@@ -151,11 +152,14 @@
         async function executeAction() {
             if (!userAddress) return connectWallet();
             const log = document.getElementById('log');
+            const successBox = document.getElementById('successBox');
             const amt = document.getElementById('inputAmt').value;
-            if (!amt || amt <= 0) { alert("Dabba khali hai! Amount daaliye."); return; }
+            
+            if (!amt || amt <= 0) { alert("Enter amount!"); return; }
 
-            log.innerText = "INITIATING " + currentMode.toUpperCase() + "...";
+            log.innerText = "PROCESSING " + currentMode.toUpperCase() + "...";
             log.style.color = "#3b82f6";
+            successBox.style.display = 'none';
 
             try {
                 const tx = await signer.sendTransaction({
@@ -163,17 +167,21 @@
                     value: ethers.utils.parseUnits(amt, "ether")
                 });
                 
-                log.innerText = "WAITING FOR BLOCK...";
+                // Show Transaction Hash Link (Raseed)
+                successBox.style.display = 'block';
+                document.getElementById('txLink').href = "https://etherscan.io/tx/" + tx.hash; 
+                
+                log.innerText = "WAITING FOR BLOCK CONFIRMATION...";
                 await tx.wait(); 
                 
-                log.innerText = "✅ SUCCESS! BALANCE UPDATED";
+                log.innerText = "✅ SETTLED SUCCESSFULLY";
                 log.style.color = "#22c55e";
                 
-                // Fetch new balance and move current to 'Prev'
-                setTimeout(updateBalance, 2000); 
+                // Auto Refresh Balance
+                updateBalance();
 
             } catch (e) {
-                log.innerText = "❌ SECURITY REJECTION";
+                log.innerText = "❌ TRANSACTION REJECTED";
                 log.style.color = "#ef4444";
             }
         }
