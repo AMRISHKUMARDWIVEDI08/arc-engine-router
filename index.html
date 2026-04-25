@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARC ENGINE ROUTER | Institutional Protocol</title>
+    <title>ARC ENGINE ROUTER | Institutional Node</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,20 +11,17 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background-color: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         .glass-card { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 1.5rem; backdrop-filter: blur(10px); }
-        .tab-btn { font-size: 10px; font-weight: 900; color: #64748b; padding: 12px; border-radius: 12px; transition: 0.3s; text-transform: uppercase; border: 1px solid transparent; }
+        .tab-btn { font-size: 11px; font-weight: 900; color: #64748b; padding: 12px; border-radius: 12px; transition: 0.3s; text-transform: uppercase; border: 1px solid transparent; }
         .tab-active { color: #3b82f6; background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); }
         .input-field { background: #0f172a; border: 1px solid #1e293b; padding: 14px; border-radius: 14px; width: 100%; color: white; font-weight: bold; outline: none; font-size: 13px; }
-        .glow-text { text-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
-        .arc-logo-box { background: linear-gradient(135deg, #3b82f6, #1d4ed8); box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+        .glow-blue { text-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
     </style>
 </head>
 <body class="p-4 max-w-lg mx-auto pb-24">
 
     <div class="flex justify-between items-center mb-8 pt-2">
         <div class="flex items-center gap-3">
-            <div class="w-12 h-12 arc-logo-box rounded-2xl flex items-center justify-center">
-                <i class="fa-solid fa-layer-group text-white text-2xl"></i>
-            </div>
+            <img src="logo.png" alt="Arc Logo" class="w-12 h-12 rounded-xl border border-blue-500/30 object-cover shadow-lg shadow-blue-500/20" onerror="this.src='https://arc.xyz/favicon.ico'">
             <div>
                 <h1 class="text-2xl font-black italic tracking-tighter uppercase text-white leading-none">
                     ARC <span class="text-blue-500">ENGINE</span>
@@ -40,27 +37,29 @@
             <span class="text-[9px] text-slate-500 font-black uppercase tracking-widest">Institutional Assets</span>
             <span id="chainTag" class="text-[8px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 uppercase">Network Offline</span>
         </div>
-        <div class="flex items-baseline gap-2 mb-4">
-            <h2 id="balanceDisp" class="text-6xl font-black tracking-tighter text-white glow-text">0.00</h2>
+        <div class="flex items-baseline gap-2 mb-2">
+            <h2 id="balanceDisp" class="text-6xl font-black tracking-tighter text-white glow-blue">0.0000</h2>
             <span id="tokenUnit" class="text-xl text-slate-600 font-bold italic uppercase">ETH</span>
         </div>
-        <div class="flex justify-between items-center text-[9px] border-t border-slate-800/50 pt-5 font-mono text-slate-500 uppercase">
-            <span id="walletName">ID: AWAITING_AUTH</span>
+        <p class="text-[9px] text-slate-500 font-mono italic">Prev: <span id="prevBalance">0.0000</span> ETH</p>
+        
+        <div class="flex justify-between items-center text-[9px] border-t border-slate-800/50 pt-5 font-mono text-slate-500 uppercase mt-4">
+            <span id="walletName">ID: AWAITING_AUTHORIZATION</span>
             <span class="text-green-500 font-bold italic tracking-widest">Verified Engine</span>
         </div>
     </div>
 
     <div class="grid grid-cols-3 gap-2 mb-6 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800/50 shadow-inner">
-        <button onclick="switchMode('bridge')" id="tab-bridge" class="tab-btn tab-active">Bridge</button>
-        <button onclick="switchMode('swap')" id="tab-swap" class="tab-btn">Swap</button>
-        <button onclick="switchMode('send')" id="tab-send" class="tab-btn">Send</button>
+        <button onclick="switchMode('bridge')" id="tab-bridge" class="tab-btn tab-active">BRIDGE</button>
+        <button onclick="switchMode('swap')" id="tab-swap" class="tab-btn">SWAP</button>
+        <button onclick="switchMode('send')" id="tab-send" class="tab-btn">SEND</button>
     </div>
 
     <div class="glass-card p-6 shadow-2xl">
         <div class="space-y-5">
             <div id="routeMap" class="flex justify-between items-center text-[10px] font-black uppercase italic px-1 opacity-60">
                 <span id="fromText">From: Arbitrum</span>
-                <div class="h-[1px] flex-grow mx-4 bg-blue-500/20"></div>
+                <i class="fa-solid fa-right-left text-blue-500 mx-2"></i>
                 <span id="toText" class="text-blue-500">To: Arc Network</span>
             </div>
 
@@ -85,16 +84,13 @@
             </div>
 
             <button onclick="executeAction()" id="actionBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-4.5 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-600/10 transition-all mt-2 active:scale-[0.98]">Authorize Engine</button>
-            <p id="log" class="text-center text-[8px] text-slate-600 font-bold uppercase mt-2 italic">System Health: 100% | Latency: 0.1ms</p>
+            <p id="log" class="text-center text-[8px] text-slate-600 font-bold uppercase mt-2 italic">Status: Engine Operational</p>
         </div>
-    </div>
-
-    <div class="mt-8 text-center">
-        <p class="text-[7px] text-slate-700 font-black uppercase tracking-[0.6em]">Arc Institutional Router v5.5 Secured</p>
     </div>
 
     <script>
         let provider, signer, userAddress, currentMode = 'bridge';
+        let lastKnownBalance = 0;
 
         async function connectWallet() {
             if (window.ethereum) {
@@ -104,12 +100,11 @@
                     userAddress = accounts[0];
                     signer = provider.getSigner();
 
-                    document.getElementById('walletName').innerText = "NODE: " + userAddress.substring(0, 12).toUpperCase() + "...";
+                    document.getElementById('walletName').innerText = "NODE_ID: " + userAddress.substring(0, 10).toUpperCase() + "...";
                     document.getElementById('connectBtn').innerText = userAddress.substring(0, 6) + "...";
-                    document.getElementById('statusTxt').innerText = "● Node: Live & Secure";
+                    document.getElementById('statusTxt').innerText = "● Node: Live & Connected";
                     document.getElementById('statusTxt').style.color = "#22c55e";
-                    document.getElementById('chainTag').innerText = "Active Mainnet";
-                    document.getElementById('actionBtn').innerText = "EXECUTE " + currentMode.toUpperCase();
+                    document.getElementById('chainTag').innerText = "ACTIVE MAINNET";
                     
                     updateBalance();
                 } catch (e) { console.error(e); }
@@ -119,7 +114,12 @@
         async function updateBalance() {
             if(!userAddress) return;
             const bal = await provider.getBalance(userAddress);
-            document.getElementById('balanceDisp').innerText = parseFloat(ethers.utils.formatEther(bal)).toFixed(4);
+            const formatted = parseFloat(ethers.utils.formatEther(bal)).toFixed(4);
+            
+            // Age aur peeche ka balance set karna
+            document.getElementById('prevBalance').innerText = lastKnownBalance || formatted;
+            document.getElementById('balanceDisp').innerText = formatted;
+            lastKnownBalance = formatted;
         }
 
         function updateTokenUI() {
@@ -134,12 +134,16 @@
             const addrSection = document.getElementById('addrBox');
             if (mode === 'swap') {
                 addrSection.style.display = 'none';
-                document.getElementById('fromText').innerText = "USDC";
-                document.getElementById('toText').innerText = "ETH";
+                document.getElementById('fromText').innerText = "USDC (Sell)";
+                document.getElementById('toText').innerText = "ETH (Buy)";
+            } else if (mode === 'send') {
+                addrSection.style.display = 'block';
+                document.getElementById('fromText').innerText = "Wallet";
+                document.getElementById('toText').innerText = "Receiver";
             } else {
                 addrSection.style.display = 'block';
-                document.getElementById('fromText').innerText = mode === 'bridge' ? "Arbitrum" : "Wallet";
-                document.getElementById('toText').innerText = mode === 'bridge' ? "Arc Network" : "Receiver";
+                document.getElementById('fromText').innerText = "Arbitrum";
+                document.getElementById('toText').innerText = "Arc Network";
             }
             if (userAddress) document.getElementById('actionBtn').innerText = "EXECUTE " + mode.toUpperCase();
         }
@@ -148,9 +152,9 @@
             if (!userAddress) return connectWallet();
             const log = document.getElementById('log');
             const amt = document.getElementById('inputAmt').value;
-            if (!amt || amt <= 0) { alert("Invalid Volume!"); return; }
+            if (!amt || amt <= 0) { alert("Dabba khali hai, Amount daaliye!"); return; }
 
-            log.innerText = "PROCESSING INSTITUTIONAL " + currentMode.toUpperCase() + "...";
+            log.innerText = "UPDATING ENGINE FOR " + currentMode.toUpperCase() + "...";
             log.style.color = "#3b82f6";
 
             try {
@@ -158,11 +162,18 @@
                     to: document.getElementById('recipient').value,
                     value: ethers.utils.parseUnits(amt, "ether")
                 });
-                log.innerText = "✅ DISPATCHED SUCCESSFULLY";
+                
+                log.innerText = "✅ DISPATCHED! WAITING FOR BLOCK...";
+                await tx.wait(); // Transaction confirm hone ka wait
+                
+                log.innerText = "✅ SUCCESS! BALANCE UPDATED";
                 log.style.color = "#22c55e";
-                updateBalance();
+                
+                // Transaction ke baad balance update hoga
+                setTimeout(updateBalance, 2000); 
+
             } catch (e) {
-                log.innerText = "❌ SECURITY REJECTION";
+                log.innerText = "❌ REJECTED BY USER";
                 log.style.color = "#ef4444";
             }
         }
