@@ -47,21 +47,21 @@
     <div id="receiveSection" class="glass-card p-6 mb-6 border-dashed border-blue-500/50 bg-blue-500/5">
         <div class="flex justify-between items-center mb-3">
             <span class="text-[10px] font-black text-blue-400 uppercase italic">Receive Assets (USDC)</span>
-            <button onclick="copyMyAddress()" class="text-[9px] bg-blue-600/20 text-blue-400 px-3 py-1 rounded-lg border border-blue-500/30 hover:bg-blue-600 hover:text-white transition-all">Copy Address</button>
+            <button onclick="copyMyAddress()" class="text-[9px] bg-blue-600/20 text-blue-400 px-3 py-1 rounded-lg border border-blue-500/30 hover:bg-blue-600 hover:text-white transition-all font-bold">COPY MY ADDRESS</button>
         </div>
         
         <div class="flex justify-between items-end">
             <div>
-                <p class="text-[8px] text-slate-500 uppercase font-bold tracking-widest">Connected USDC (Atlantic)</p>
-                <h3 id="usdcBalance" class="text-3xl font-black text-white glow-blue">0.00</h3>
+                <p class="text-[8px] text-slate-500 uppercase font-bold tracking-widest">Verified USDC Balance</p>
+                <h3 id="usdcBalance" class="text-4xl font-black text-white glow-blue">0.00</h3>
             </div>
             <div class="text-right">
-                <p id="myAddressDisp" class="text-[7px] font-mono text-slate-500 break-all max-w-[150px]">Connect Wallet to see address</p>
+                <p id="myAddressDisp" class="text-[7px] font-mono text-slate-500 break-all max-w-[140px]">AWAITING AUTHORIZATION...</p>
             </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-3 gap-2 mb-6 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800/50 shadow-inner">
+    <div class="grid grid-cols-3 gap-2 mb-6 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800/50">
         <button onclick="switchMode('send')" id="tab-send" class="tab-btn">SEND</button>
         <button onclick="switchMode('swap')" id="tab-swap" class="tab-btn">SWAP</button>
         <button onclick="switchMode('bridge')" id="tab-bridge" class="tab-btn tab-active">BRIDGE</button>
@@ -69,23 +69,23 @@
 
     <div class="glass-card p-6 shadow-2xl">
         <div class="space-y-5">
-            <div id="routeMap" class="flex justify-between items-center text-[10px] font-black uppercase italic px-1 opacity-60">
+            <div id="routeMap" class="flex justify-between items-center text-[10px] font-black uppercase italic px-1 opacity-60 text-blue-400">
                 <span id="fromText">From: Arbitrum</span>
-                <i class="fa-solid fa-right-left text-blue-500 mx-2"></i>
-                <span id="toText" class="text-blue-500">To: Arc Network</span>
+                <i class="fa-solid fa-right-to-bracket mx-2"></i>
+                <span id="toText">To: Arc Network</span>
             </div>
 
             <div id="addrBox">
-                <label class="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Receiver Address</label>
+                <label class="text-[9px] font-black text-slate-500 uppercase ml-1 tracking-widest">Target Node (Receiver)</label>
                 <input type="text" id="recipient" value="0x20910Aa09451FE483D1930C25a4556a32160F873" class="input-field font-mono text-blue-400 mt-1">
             </div>
             
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Asset</label>
+                    <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Asset Class</label>
                     <select id="assetSelect" onchange="updateTokenUI()" class="input-field text-xs font-bold mt-1">
-                        <option value="ETH">ETH</option>
-                        <option value="USDC">USDC (Circle)</option>
+                        <option value="ETH">Native ETH</option>
+                        <option value="USDC">USDC (Atlantic)</option>
                     </select>
                 </div>
                 <div>
@@ -94,8 +94,8 @@
                 </div>
             </div>
 
-            <button onclick="executeAction()" id="actionBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-4.5 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-600/10 transition-all mt-2 active:scale-[0.98]">Execute Engine</button>
-            <p id="log" class="text-center text-[8px] text-slate-600 font-bold uppercase mt-2 italic">Status: Engine Operational</p>
+            <button onclick="executeAction()" id="actionBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-4.5 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-600/10 transition-all mt-2 active:scale-[0.98]">Execute Node</button>
+            <p id="log" class="text-center text-[8px] text-slate-600 font-bold uppercase mt-2 italic tracking-widest">Engine Status: Standby</p>
         </div>
     </div>
 
@@ -103,7 +103,7 @@
         let provider, signer, userAddress, currentMode = 'bridge';
         let lastBalance = 0;
 
-        // --- CONSTANTS ---
+        // USDC ATLANTIC CONTRACT (From your successful test)
         const USDC_CONTRACT = "0x127bF57662c19958E406981882046524316bED77";
         const USDC_ABI = [
             "function balanceOf(address owner) view returns (uint256)",
@@ -113,22 +113,25 @@
         async function connectWallet() {
             if (window.ethereum) {
                 try {
-                    provider = new ethers.providers.Web3Provider(window.ethereum);
-                    const accounts = await provider.send("eth_requestAccounts", []);
+                    // Rabby/Mises-friendly request
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                     userAddress = accounts[0];
+                    
+                    provider = new ethers.providers.Web3Provider(window.ethereum, "any");
                     signer = provider.getSigner();
 
-                    document.getElementById('walletName').innerText = "NODE: " + userAddress.substring(0, 10).toUpperCase() + "...";
-                    document.getElementById('connectBtn').innerText = userAddress.substring(0, 6) + "...";
-                    document.getElementById('statusTxt').innerText = "● Node: Live";
+                    // Update UI
+                    document.getElementById('walletName').innerText = "NODE_ID: " + userAddress.substring(0, 10).toUpperCase() + "...";
+                    document.getElementById('connectBtn').innerText = userAddress.substring(0, 6).toUpperCase() + "...";
+                    document.getElementById('statusTxt').innerText = "● Node: Live & Operational";
                     document.getElementById('statusTxt').style.color = "#22c55e";
-                    document.getElementById('chainTag').innerText = "ACTIVE";
+                    document.getElementById('chainTag').innerText = "ARC ATLANTIC";
                     document.getElementById('myAddressDisp').innerText = userAddress;
                     
                     updateBalance();
                     updateUSDCBalance();
-                } catch (e) { console.error(e); }
-            } else { alert("Please use Mises Browser!"); }
+                } catch (e) { console.error(e); alert("Connection Failed!"); }
+            } else { alert("Rabby Wallet or Mises Browser not detected!"); }
         }
 
         async function updateBalance() {
@@ -148,13 +151,13 @@
                 const decimals = await contract.decimals();
                 const formatted = ethers.utils.formatUnits(balance, decimals);
                 document.getElementById('usdcBalance').innerText = parseFloat(formatted).toFixed(2);
-            } catch (e) { console.error("USDC Fetch Error:", e); }
+            } catch (e) { console.error("USDC Error:", e); }
         }
 
         function copyMyAddress() {
-            if (!userAddress) return alert("Wallet connect kijiye!");
+            if (!userAddress) { alert("Connect first!"); return; }
             navigator.clipboard.writeText(userAddress);
-            alert("Address Copied: " + userAddress);
+            document.getElementById('log').innerText = "ADDRESS COPIED TO CLIPBOARD";
         }
 
         function updateTokenUI() {
@@ -173,7 +176,7 @@
                 document.getElementById('toText').innerText = "BUY: ETH";
             } else {
                 addrSection.style.display = 'block';
-                document.getElementById('fromText').innerText = mode === 'send' ? "MY WALLET" : "ARBITRUM";
+                document.getElementById('fromText').innerText = mode === 'send' ? "MY NODE" : "ARBITRUM";
                 document.getElementById('toText').innerText = mode === 'send' ? "RECEIVER" : "ARC NETWORK";
             }
             if (userAddress) document.getElementById('actionBtn').innerText = "EXECUTE " + mode.toUpperCase();
@@ -183,9 +186,9 @@
             if (!userAddress) return connectWallet();
             const log = document.getElementById('log');
             const amt = document.getElementById('inputAmt').value;
-            if (!amt || amt <= 0) { alert("Enter amount!"); return; }
+            if (!amt || amt <= 0) { alert("Enter Amount!"); return; }
 
-            log.innerText = "PROCESSING " + currentMode.toUpperCase() + "...";
+            log.innerText = "PROCESSING TRANSACTION...";
             log.style.color = "#3b82f6";
 
             try {
@@ -195,21 +198,24 @@
                 });
                 log.innerText = "WAITING FOR BLOCK...";
                 await tx.wait(); 
-                log.innerText = "✅ SETTLED SUCCESSFULLY";
+                log.innerText = "✅ TRANSACTION SUCCESSFUL";
                 log.style.color = "#22c55e";
                 updateBalance();
                 updateUSDCBalance();
             } catch (e) {
-                log.innerText = "❌ TRANSACTION REJECTED";
+                log.innerText = "❌ TRANSACTION FAILED";
                 log.style.color = "#ef4444";
             }
         }
 
-        // Auto Refresh USDC every 10 seconds
+        // Auto Refresh every 10 seconds
         setInterval(() => {
-            if(userAddress) updateUSDCBalance();
+            if(userAddress) {
+                updateBalance();
+                updateUSDCBalance();
+            }
         }, 10000);
     </script>
 </body>
-    </html>
-                
+                                                                                                                             </html>
+    
