@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARC ENGINE | Universal v12.2</title>
+    <title>ARC ENGINE | Universal v12.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -122,17 +122,17 @@
         function openModal() { document.getElementById('walletModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('walletModal').style.display = 'none'; }
 
-        // STRICT WALLET DETECTION & FORCED SIGN-IN LOGIC
         async function initConnect(walletType) {
             closeModal();
             let ethProvider = null;
 
-            // Step 1: Detect specific wallet accurately
+            // 1. STRICT WALLET ROUTING (Fix for Rabby Hijacking)
             if (walletType === 'metamask') {
                 if (window.ethereum && window.ethereum.providers) {
                     ethProvider = window.ethereum.providers.find(p => p.isMetaMask && !p.isRabby);
+                } else if (window.ethereum && window.ethereum.isMetaMask && !window.ethereum.isRabby) {
+                    ethProvider = window.ethereum;
                 }
-                if (!ethProvider) ethProvider = window.ethereum;
             } else if (walletType === 'rabby') {
                 ethProvider = window.rabby || (window.ethereum && window.ethereum.isRabby ? window.ethereum : null);
             } else if (walletType === 'okx') {
@@ -143,44 +143,46 @@
                 ethProvider = (window.bitkeep && window.bitkeep.ethereum) ? window.bitkeep.ethereum : window.bitgetWallet;
             }
 
-            // DApp Browser fallback
-            if (!ethProvider && window.ethereum) {
+            // 2. MOBILE DAPP BROWSER FALLBACK
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (!ethProvider && isMobile && window.ethereum) {
                 ethProvider = window.ethereum;
             }
 
-            if (ethProvider) {
-                try {
-                    // Step 2: FORCE WALLET TO POP UP (Ask for account permissions again)
-                    await ethProvider.request({
-                        method: 'wallet_requestPermissions',
-                        params: [{ eth_accounts: {} }]
-                    });
+            // 3. RABBY HIJACKING WARNING
+            if (!ethProvider && walletType === 'metamask' && window.ethereum && window.ethereum.isRabby) {
+                alert("🚨 Rabby is overriding MetaMask! Please go to Rabby Extension Settings and turn OFF 'Set Rabby as Default Wallet'.");
+                return;
+            }
 
-                    // Step 3: Get the selected account
-                    const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
-                    userAddress = accounts[0];
-                    
-                    provider = new ethers.providers.Web3Provider(ethProvider, "any");
-                    signer = provider.getSigner();
+            if (!ethProvider) {
+                alert("❌ " + walletType.toUpperCase() + " not detected! Please install the correct extension or open in its DApp browser.");
+                return;
+            }
 
-                    // Step 4: FORCE SIGN-IN SIGNATURE (This handles the "Sign In" confirmation)
-                    const signMessage = "Welcome to ARC ENGINE!\n\nPlease sign this message to confirm your identity and login.\n\nWallet: " + userAddress;
-                    await signer.signMessage(signMessage);
+            try {
+                // 4. REQUEST CONNECTION
+                const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
+                userAddress = accounts[0];
+                
+                provider = new ethers.providers.Web3Provider(ethProvider, "any");
+                signer = provider.getSigner();
 
-                    // Step 5: Update UI only after successful Sign-In
-                    document.getElementById('connectBtn').innerText = "LIVE";
-                    document.getElementById('dcBtn').classList.remove('hidden');
-                    document.getElementById('myFullAddr').innerText = userAddress;
-                    document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${userAddress}`;
-                    
-                    updateBalances();
-                } catch (e) { 
-                    console.error("Connection Error:", e);
-                    alert("Wallet Connection or Sign-In was cancelled."); 
-                    disconnectNode(); // Reset everything if they cancel the signature
-                }
-            } else { 
-                alert(walletType.toUpperCase() + " not detected. Make sure the extension is installed or you are using its DApp browser."); 
+                // 5. FORCE SIGN-IN CONFIRMATION (Yeh work karega perfectly)
+                const signMessage = "Verify your connection to ARC ENGINE.\n\nWallet: " + userAddress;
+                await signer.signMessage(signMessage);
+
+                // 6. UPDATE UI ONLY AFTER SIGNATURE IS SUCCESSFUL
+                document.getElementById('connectBtn').innerText = "LIVE";
+                document.getElementById('dcBtn').classList.remove('hidden');
+                document.getElementById('myFullAddr').innerText = userAddress;
+                document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${userAddress}`;
+                
+                updateBalances();
+            } catch (e) { 
+                console.error("Error:", e);
+                alert("⚠️ Connection or Sign-In was Cancelled by user!"); 
+                disconnectNode(); 
             }
         }
 
@@ -247,5 +249,4 @@
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
-    </html>
-    
+</html>
