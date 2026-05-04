@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARC ENGINE | Universal v12.3</title>
+    <title>ARC ENGINE | Universal v12.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,9 +23,17 @@
         .wallet-opt { background: #000; color: #facc15; padding: 15px; border-radius: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 15px; font-weight: 900; cursor: pointer; border: 3px solid transparent; transition: 0.3s; font-size: 16px; }
         .wallet-opt:hover { border-color: #fff; transform: scale(1.02); }
         .wallet-icon { width: 28px; height: 28px; object-fit: contain; }
+        
+        /* Floating Feedback Button */
+        .feedback-btn { position: fixed; bottom: 20px; right: 20px; background: #000; color: #facc15; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #facc15; box-shadow: 0 10px 25px rgba(0,0,0,0.5); cursor: pointer; z-index: 999; transition: 0.3s; }
+        .feedback-btn:hover { transform: scale(1.1); background: #222; }
     </style>
 </head>
-<body class="p-4 max-w-lg mx-auto pb-24">
+<body class="p-4 max-w-lg mx-auto pb-24 relative">
+
+    <button onclick="alert('Feedback system active. Drop your suggestions!')" class="feedback-btn">
+        <i class="fa-solid fa-comment-dots"></i>
+    </button>
 
     <div id="walletModal">
         <div class="modal-content">
@@ -33,9 +41,6 @@
             
             <div class="wallet-opt" onclick="initConnect('metamask')">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" class="wallet-icon"> METAMASK
-            </div>
-            <div class="wallet-opt" onclick="initConnect('rabby')">
-                <img src="https://rabby.io/assets/logo.svg" class="wallet-icon" style="background:#fff; border-radius:50%; padding:2px;"> RABBY WALLET
             </div>
             <div class="wallet-opt" onclick="initConnect('okx')">
                 <i class="fa-solid fa-wallet text-2xl text-white w-[28px]"></i> OKX WALLET
@@ -45,6 +50,9 @@
             </div>
             <div class="wallet-opt" onclick="initConnect('bitget')">
                 <i class="fa-solid fa-money-bill-transfer text-2xl text-cyan-400 w-[28px]"></i> BITGET WALLET
+            </div>
+            <div class="wallet-opt" onclick="initConnect('rabby')">
+                <img src="https://rabby.io/assets/logo.svg" class="wallet-icon" style="background:#fff; border-radius:50%; padding:2px;"> RABBY WALLET
             </div>
 
             <button onclick="closeModal()" class="mt-4 font-black uppercase underline text-xs">CANCEL</button>
@@ -65,16 +73,19 @@
     </div>
 
     <div class="glass-card p-10 relative">
+        <div class="absolute top-6 right-6 bg-white p-1 rounded-full shadow-lg border-2 border-black">
+            <img src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" alt="USDC" class="w-7 h-7">
+        </div>
+
         <div class="flex justify-between items-center mb-4">
             <span class="label-text">Balance</span>
-            <button onclick="disconnectNode()" id="dcBtn" class="hidden bg-red-600 text-white text-[9px] px-3 py-1 rounded-full font-black border-2 border-black">DISCONNECT</button>
+            <button onclick="disconnectNode()" id="dcBtn" class="hidden bg-red-600 text-white text-[9px] px-3 py-1 rounded-full font-black border-2 border-black mr-12">DISCONNECT</button>
         </div>
         <div class="flex items-baseline gap-3 mb-6">
             <h2 id="balanceDisp" class="big-number">0.0000</h2>
             <span class="text-2xl text-yellow-500 font-black italic">ETH</span>
         </div>
         <div class="border-t border-yellow-500/10 pt-6 flex items-center gap-2">
-            <img src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" alt="USDC" class="w-6 h-6">
             <p id="usdcBalance" class="text-2xl font-black text-white">0.00 <span class="text-[12px] text-yellow-600">USDC</span></p>
         </div>
     </div>
@@ -126,53 +137,44 @@
             closeModal();
             let ethProvider = null;
 
-            // 1. STRICT WALLET ROUTING (Fix for Rabby Hijacking)
-            if (walletType === 'metamask') {
+            // 1. SPECIFIC WALLET DETECTION
+            if (walletType === 'okx') ethProvider = window.okxwallet;
+            else if (walletType === 'trustwallet') ethProvider = window.trustwallet || window.trustWallet;
+            else if (walletType === 'bitget') ethProvider = (window.bitkeep && window.bitkeep.ethereum) ? window.bitkeep.ethereum : window.bitgetWallet;
+            else if (walletType === 'rabby') ethProvider = window.rabby;
+            else if (walletType === 'metamask') {
                 if (window.ethereum && window.ethereum.providers) {
                     ethProvider = window.ethereum.providers.find(p => p.isMetaMask && !p.isRabby);
-                } else if (window.ethereum && window.ethereum.isMetaMask && !window.ethereum.isRabby) {
+                } else if (window.ethereum && window.ethereum.isMetaMask) {
                     ethProvider = window.ethereum;
                 }
-            } else if (walletType === 'rabby') {
-                ethProvider = window.rabby || (window.ethereum && window.ethereum.isRabby ? window.ethereum : null);
-            } else if (walletType === 'okx') {
-                ethProvider = window.okxwallet;
-            } else if (walletType === 'trustwallet') {
-                ethProvider = window.trustwallet || window.trustWallet;
-            } else if (walletType === 'bitget') {
-                ethProvider = (window.bitkeep && window.bitkeep.ethereum) ? window.bitkeep.ethereum : window.bitgetWallet;
             }
 
-            // 2. MOBILE DAPP BROWSER FALLBACK
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            if (!ethProvider && isMobile && window.ethereum) {
+            // 2. UNIVERSAL MOBILE/DAPP FALLBACK (Yeh error aane se rokega)
+            // Agar specific naam nahi mila par window.ethereum maujood hai (jaise mobile DApps mein hota hai), toh usi ko use karo
+            if (!ethProvider && window.ethereum) {
                 ethProvider = window.ethereum;
             }
 
-            // 3. RABBY HIJACKING WARNING
-            if (!ethProvider && walletType === 'metamask' && window.ethereum && window.ethereum.isRabby) {
-                alert("🚨 Rabby is overriding MetaMask! Please go to Rabby Extension Settings and turn OFF 'Set Rabby as Default Wallet'.");
-                return;
-            }
-
+            // Agar tab bhi kuch na mile, tabhi error dikhao
             if (!ethProvider) {
-                alert("❌ " + walletType.toUpperCase() + " not detected! Please install the correct extension or open in its DApp browser.");
+                alert("❌ Wallet not detected! Please open this page INSIDE your wallet app's browser (e.g., Trust Wallet, OKX App) or install an extension.");
                 return;
             }
 
             try {
-                // 4. REQUEST CONNECTION
+                // 3. REQUEST CONNECTION
                 const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
                 userAddress = accounts[0];
                 
                 provider = new ethers.providers.Web3Provider(ethProvider, "any");
                 signer = provider.getSigner();
 
-                // 5. FORCE SIGN-IN CONFIRMATION (Yeh work karega perfectly)
+                // 4. SIGNATURE REQUEST
                 const signMessage = "Verify your connection to ARC ENGINE.\n\nWallet: " + userAddress;
                 await signer.signMessage(signMessage);
 
-                // 6. UPDATE UI ONLY AFTER SIGNATURE IS SUCCESSFUL
+                // 5. UPDATE UI
                 document.getElementById('connectBtn').innerText = "LIVE";
                 document.getElementById('dcBtn').classList.remove('hidden');
                 document.getElementById('myFullAddr').innerText = userAddress;
@@ -180,8 +182,8 @@
                 
                 updateBalances();
             } catch (e) { 
-                console.error("Error:", e);
-                alert("⚠️ Connection or Sign-In was Cancelled by user!"); 
+                console.error("Connection Error:", e);
+                alert("⚠️ Request Cancelled by User!"); 
                 disconnectNode(); 
             }
         }
@@ -249,4 +251,5 @@
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
-</html>
+                    </html>
+        
