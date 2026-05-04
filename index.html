@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARC ENGINE | Universal v12.5</title>
+    <title>ARC ENGINE | Universal v12.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -226,18 +226,24 @@
             }
         }
 
-        // ====== FIXED SEND LOGIC - NO UI CHANGES ======
+        // ====== SMOOTH SEND LOGIC WITHOUT BLOCKING ALERTS ======
         async function executeAction() {
             if (!userAddress) return openModal();
             const amt = document.getElementById('inputAmt').value;
             const asset = document.getElementById('assetSelect').value;
             const recipient = document.getElementById('recipient').value;
+            const actionBtn = document.getElementById('actionBtn');
 
             if (!amt || amt <= 0) return alert("Please enter a valid Amount.");
 
             try {
+                // Change Button UI to show progress without blocking popup
+                const originalText = actionBtn.innerText;
+                actionBtn.innerText = "Confirm in Wallet...";
+                actionBtn.style.opacity = "0.7";
+                actionBtn.disabled = true;
+
                 let tx;
-                alert("Please confirm the transaction in your wallet...");
 
                 if (asset === 'ETH') {
                     // Send ETH Logic
@@ -246,22 +252,36 @@
                         value: ethers.utils.parseUnits(amt, "ether") 
                     });
                 } else if (asset === 'USDC') {
-                    // Send USDC Logic (Calling smart contract transfer)
+                    // Send USDC Logic
                     const contract = new ethers.Contract(USDC_CONTRACT, ["function transfer(address to, uint256 amount) public returns (bool)"], signer);
                     tx = await contract.transfer(recipient, ethers.utils.parseUnits(amt, 18));
                 }
                 
+                // Once user confirms in wallet, change button text again
+                actionBtn.innerText = "Processing Tx...";
+
                 // Wait for the transaction to be mined on the blockchain
                 await tx.wait(); 
                 
-                // Only update balances AFTER the transaction is fully confirmed
+                // Transaction complete: Update everything smoothly
                 updateBalances();
                 document.getElementById('inputAmt').value = ""; // Clear the input field
+                
+                actionBtn.innerText = "Execute Engine"; // Reset Button
+                actionBtn.style.opacity = "1";
+                actionBtn.disabled = false;
+                
                 alert("Transaction Successful! Balance has been updated.");
 
             } catch (e) { 
                 console.error(e);
-                alert("Transaction Rejected! Ensure you have enough funds/gas fees in your wallet."); 
+                // Reset Button on rejection/error
+                actionBtn.innerText = "Execute Engine";
+                actionBtn.style.opacity = "1";
+                actionBtn.disabled = false;
+                
+                // Only alert AFTER the rejection so it doesn't block the request
+                alert("Transaction Rejected or Failed!"); 
             }
         }
         // ===============================================
@@ -285,5 +305,5 @@
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
-    </html>
-            
+                </html>
+                                                                                                             
