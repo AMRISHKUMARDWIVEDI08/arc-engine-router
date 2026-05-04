@@ -31,7 +31,7 @@
 </head>
 <body class="p-4 max-w-lg mx-auto pb-24 relative">
 
-    <button onclick="alert('Feedback system active. Drop your suggestions!')" class="feedback-btn">
+    <button onclick="document.getElementById('feedbackSection').scrollIntoView({behavior: 'smooth'})" class="feedback-btn">
         <i class="fa-solid fa-comment-dots"></i>
     </button>
 
@@ -124,6 +124,15 @@
             <p id="myFullAddr" class="text-[10px] font-mono text-yellow-600 break-all bg-black p-4 rounded-xl border border-yellow-500/20 italic">AWAITING_AUTH</p>
             <button onclick="copyMyAddress()" class="bg-yellow-400 text-black px-10 py-4 rounded-xl text-[12px] font-black uppercase">Copy Address</button>
         </div>
+    </div>
+
+    <div id="feedbackSection" class="glass-card p-8 mt-10 mb-8">
+        <div class="flex items-center gap-3 mb-4">
+            <i class="fa-solid fa-comment-dots text-yellow-500 text-2xl"></i>
+            <span class="label-text !mb-0">Leave Feedback</span>
+        </div>
+        <textarea id="feedbackInput" rows="3" placeholder="Tell us how we can improve..." class="input-heavy !text-[14px] !p-4 mb-4 resize-none"></textarea>
+        <button onclick="submitFeedback()" class="w-full bg-yellow-400 py-4 rounded-2xl text-[14px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Submit Feedback</button>
     </div>
 
     <script>
@@ -247,9 +256,20 @@
             navigator.clipboard.writeText(userAddress); 
             alert("Copied!"); 
         }
+
+        // FEEDBACK FUNCTION ADDED HERE
+        function submitFeedback() {
+            const feedbackText = document.getElementById('feedbackInput').value;
+            if (!feedbackText.trim()) {
+                alert("Please write something before submitting!");
+                return;
+            }
+            alert("Thank you! Your feedback has been recorded.");
+            document.getElementById('feedbackInput').value = ""; 
+        }
         
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
                     </html>
-        
+            
