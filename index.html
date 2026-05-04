@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARC ENGINE | Feedback Edition v13.0</title>
+    <title>ARC ENGINE | Multi-Wallet Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,16 +12,17 @@
         body { background-color: #facc15; color: #000; font-family: 'Inter', sans-serif; overflow-x: hidden; margin: 0; }
         .glass-card { background: #000 !important; border: 4px solid #000; border-radius: 2.8rem; box-shadow: 0 35px 70px rgba(0,0,0,0.45); margin-bottom: 25px; }
         @keyframes spin3D { 0% { transform: perspective(1000px) rotateY(0deg); } 100% { transform: perspective(1000px) rotateY(360deg); } }
-        .logo-3d { animation: spin3D 5s linear infinite; transform-style: preserve-3d; }
+        .logo-3d { animation: spin3D 5s linear infinite; transform-style: preserve-3d; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3)); }
         .big-number { font-family: 'Orbitron', sans-serif; font-size: 4.5rem; font-weight: 900; color: #fff; letter-spacing: -3px; line-height: 1; }
         .label-text { font-size: 14px; font-weight: 900; color: #facc15; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 10px; }
         .input-heavy { background: #111; border: 3px solid #333; padding: 22px; border-radius: 20px; width: 100%; color: #facc15; font-weight: 900; font-size: 1.2rem; outline: none; }
-        /* 5-Column Grid adjust for Tabs */
+        
         .nav-btn { font-size: 12px; font-weight: 900; color: #222; padding: 16px 5px; border-radius: 16px; text-transform: uppercase; }
         .nav-active { color: #facc15 !important; background: #000 !important; box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
+        
         #walletModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        .modal-content { background: #facc15; border: 6px solid #000; border-radius: 3rem; width: 92%; max-width: 400px; padding: 35px; text-align: center; }
-        .wallet-opt { background: #000; color: #facc15; padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 15px; font-weight: 900; cursor: pointer; border: 3px solid transparent; transition: 0.3s; }
+        .modal-content { background: #facc15; border: 6px solid #000; border-radius: 3rem; width: 92%; max-width: 400px; padding: 30px; text-align: center; max-height: 85vh; overflow-y: auto; }
+        .wallet-opt { background: #000; color: #facc15; padding: 16px; border-radius: 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 15px; font-weight: 900; cursor: pointer; border: 3px solid transparent; transition: 0.3s; }
         .wallet-opt:hover { border-color: #fff; transform: scale(1.02); }
     </style>
 </head>
@@ -29,13 +30,24 @@
 
     <div id="walletModal">
         <div class="modal-content">
-            <h2 class="text-2xl font-black uppercase mb-6 italic">Connect Wallet</h2>
-            <div class="wallet-opt" onclick="initConnect('extension')">
-                <i class="fa-solid fa-puzzle-piece"></i> EXTENSIONS
+            <h2 class="text-2xl font-black uppercase mb-6 italic">Select Wallet</h2>
+            
+            <div class="wallet-opt" onclick="initConnect('metamask')">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Mirror_Logo.svg" class="w-6 h-6"> MetaMask
             </div>
-            <div class="wallet-opt" onclick="initConnect('dapp')">
-                <i class="fa-solid fa-mobile-screen"></i> DAPP BROWSER
+            <div class="wallet-opt" onclick="initConnect('okx')">
+                <i class="fa-solid fa-circle-nodes text-xl text-white"></i> OKX Wallet
             </div>
+            <div class="wallet-opt" onclick="initConnect('trust')">
+                <i class="fa-solid fa-shield-halved text-xl text-blue-500"></i> Trust Wallet
+            </div>
+            <div class="wallet-opt" onclick="initConnect('bitget')">
+                <i class="fa-solid fa-wallet text-xl text-cyan-400"></i> Bitget Wallet
+            </div>
+            <div class="wallet-opt" onclick="initConnect('rabby')">
+                <img src="https://rabby.io/assets/logo.png" class="w-6 h-6 rounded-full"> Rabby Wallet
+            </div>
+
             <button onclick="closeModal()" class="mt-4 font-black uppercase underline text-xs">CANCEL</button>
         </div>
     </div>
@@ -47,10 +59,13 @@
             </div>
             <div>
                 <h1 class="text-3xl font-black italic text-black leading-none uppercase">ARC ENGINE</h1>
-                <p class="text-[10px] text-black font-black uppercase mt-1 italic">Enterprise Build v13</p>
+                <p class="text-[10px] text-black font-black uppercase mt-1 italic">Multi-Wallet Supported</p>
             </div>
         </div>
-        <button onclick="openModal()" id="connectBtn" class="bg-black text-yellow-400 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase shadow-2xl">Connect</button>
+        <div class="text-center">
+            <img src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" class="w-10 h-10 mx-auto logo-3d mb-2">
+            <button onclick="openModal()" id="connectBtn" class="bg-black text-yellow-400 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase shadow-2xl">Connect</button>
+        </div>
     </div>
 
     <div class="glass-card p-10 relative">
@@ -106,10 +121,10 @@
 
         <div id="feedbackUI" class="hidden space-y-6">
             <div>
-                <label class="label-text !text-[11px] mb-2">System Feedback / Support</label>
-                <textarea id="feedbackMsg" rows="5" placeholder="Report a bug or suggest a new feature..." class="input-heavy resize-none text-[15px]"></textarea>
+                <label class="label-text !text-[11px] mb-2">Leave Feedback</label>
+                <textarea id="feedbackMsg" rows="4" placeholder="Tell us how we can improve..." class="input-heavy resize-none text-[14px]"></textarea>
             </div>
-            <button onclick="submitFeedback()" class="w-full bg-yellow-400 py-7 rounded-[2.5rem] text-[16px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Submit to Core Team</button>
+            <button onclick="submitFeedback()" class="w-full bg-yellow-400 py-6 rounded-[2.5rem] text-[15px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Submit Feedback</button>
         </div>
 
     </div>
@@ -124,6 +139,7 @@
     <script>
         let provider, signer, userAddress;
         const USDC_CONTRACT = "0x127bF57662c19958E406981882046524316bED77";
+        // USDC Real ABI
         const USDC_ABI = [
             "function balanceOf(address) view returns (uint256)",
             "function transfer(address to, uint amount) returns (bool)"
@@ -132,9 +148,18 @@
         function openModal() { document.getElementById('walletModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('walletModal').style.display = 'none'; }
 
-        async function initConnect(type) {
+        // Specific Wallet Connection Logic
+        async function initConnect(walletType) {
             closeModal();
-            const ethProvider = window.ethereum || (window.rabby ? window.rabby : (window.trustWallet ? window.trustWallet : null));
+            let ethProvider;
+
+            if (walletType === 'metamask') ethProvider = window.ethereum;
+            else if (walletType === 'okx') ethProvider = window.okxwallet || window.ethereum;
+            else if (walletType === 'trust') ethProvider = window.trustwallet || window.ethereum;
+            else if (walletType === 'bitget') ethProvider = window.bitkeep && window.bitkeep.ethereum || window.ethereum;
+            else if (walletType === 'rabby') ethProvider = window.rabby || window.ethereum;
+            else ethProvider = window.ethereum;
+
             if (ethProvider) {
                 try {
                     const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
@@ -148,8 +173,10 @@
                     document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${userAddress}`;
                     
                     updateBalances();
-                } catch (e) { alert("Connect Failed"); }
-            } else { alert("Wallet Not Found. Open in MetaMask/Trust DApp or Mises Extension."); }
+                } catch (e) { alert("Connection Rejected by User"); }
+            } else { 
+                alert("Selected Wallet Not Found! Please install the app or extension."); 
+            }
         }
 
         async function updateBalances() {
@@ -161,7 +188,7 @@
                 const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, provider);
                 const uBal = await contract.balanceOf(userAddress);
                 document.getElementById('usdcBalance').innerText = parseFloat(ethers.utils.formatUnits(uBal, 18)).toFixed(2) + " USDC";
-            } catch (e) {}
+            } catch (e) { console.error("Balance Update Error"); }
         }
 
         function disconnectNode() {
@@ -170,19 +197,17 @@
             document.getElementById('dcBtn').classList.add('hidden');
             document.getElementById('balanceDisp').innerText = "0.0000";
             document.getElementById('usdcBalance').innerText = "0.00 USDC";
-            alert("Disconnected.");
+            alert("Wallet Disconnected Safely.");
         }
 
         function switchMode(mode) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
             document.getElementById('tab-' + mode).classList.add('nav-active');
             
-            // Hide all dynamic elements first
             document.getElementById('actionContent').classList.add('hidden');
             document.getElementById('receiveUI').classList.add('hidden');
             document.getElementById('feedbackUI').classList.add('hidden');
 
-            // Show selected element
             if (mode === 'receive') document.getElementById('receiveUI').classList.remove('hidden');
             else if (mode === 'feedback') document.getElementById('feedbackUI').classList.remove('hidden');
             else document.getElementById('actionContent').classList.remove('hidden');
@@ -190,13 +215,11 @@
 
         function submitFeedback() {
             const msg = document.getElementById('feedbackMsg').value;
-            if(!msg || msg.trim() === "") return alert("Warning: Please enter feedback details first.");
+            if(!msg || msg.trim() === "") return alert("Please type your feedback first.");
             
-            alert("Success: Your feedback has been securely transmitted to the Arc core team.");
+            alert("Feedback Submitted! Thank you for helping us improve.");
             document.getElementById('feedbackMsg').value = '';
-            
-            // Log it in activity history
-            addHistory('FEEDBACK', 'SUBMITTED', 'CORE_SYSTEM_LOG');
+            addHistory('FEEDBACK', 'SENT', 'ARC_CORE_TEAM');
         }
 
         async function executeAction() {
@@ -205,7 +228,7 @@
             const target = document.getElementById('recipient').value;
             const asset = document.getElementById('assetSelect').value;
 
-            if (!amt || amt <= 0) return alert("Enter Valid Amount");
+            if (!amt || amt <= 0) return alert("Enter a valid volume");
 
             try {
                 document.getElementById('actionBtn').innerText = "PROCESSING...";
@@ -226,8 +249,11 @@
 
             } catch (e) {
                 document.getElementById('actionBtn').innerText = "Execute Engine";
-                if(e.code === "ACTION_REJECTED" || e.code === 4001) alert("Transaction Rejected by You.");
-                else alert("Transaction Failed! Check Balance or Gas Fee.");
+                if(e.code === "ACTION_REJECTED" || e.code === 4001) {
+                    alert("Transaction Rejected by You.");
+                } else {
+                    alert("Transaction Failed! Insufficient Balance or Gas.");
+                }
             }
         }
 
@@ -244,4 +270,5 @@
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
-</html>
+    </html>
+                                                                                                     
