@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARC ENGINE | Universal v12.1</title>
+    <title>ARC ENGINE | Universal v12.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -38,13 +38,13 @@
                 <img src="https://rabby.io/assets/logo.svg" class="wallet-icon" style="background:#fff; border-radius:50%; padding:2px;"> RABBY WALLET
             </div>
             <div class="wallet-opt" onclick="initConnect('okx')">
-                <i class="fa-solid fa-wallet text-2xl text-white"></i> OKX WALLET
+                <i class="fa-solid fa-wallet text-2xl text-white w-[28px]"></i> OKX WALLET
             </div>
             <div class="wallet-opt" onclick="initConnect('trustwallet')">
-                <i class="fa-solid fa-shield-halved text-2xl text-blue-500"></i> TRUST WALLET
+                <i class="fa-solid fa-shield-halved text-2xl text-blue-500 w-[28px]"></i> TRUST WALLET
             </div>
             <div class="wallet-opt" onclick="initConnect('bitget')">
-                <i class="fa-solid fa-money-bill-transfer text-2xl text-cyan-400"></i> BITGET WALLET
+                <i class="fa-solid fa-money-bill-transfer text-2xl text-cyan-400 w-[28px]"></i> BITGET WALLET
             </div>
 
             <button onclick="closeModal()" class="mt-4 font-black uppercase underline text-xs">CANCEL</button>
@@ -122,15 +122,19 @@
         function openModal() { document.getElementById('walletModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('walletModal').style.display = 'none'; }
 
-        // UPDATED WALLET CONNECTION LOGIC
+        // STRICT WALLET DETECTION & FORCED SIGN-IN LOGIC
         async function initConnect(walletType) {
             closeModal();
             let ethProvider = null;
 
+            // Step 1: Detect specific wallet accurately
             if (walletType === 'metamask') {
-                ethProvider = window.ethereum;
+                if (window.ethereum && window.ethereum.providers) {
+                    ethProvider = window.ethereum.providers.find(p => p.isMetaMask && !p.isRabby);
+                }
+                if (!ethProvider) ethProvider = window.ethereum;
             } else if (walletType === 'rabby') {
-                ethProvider = window.rabby || window.ethereum;
+                ethProvider = window.rabby || (window.ethereum && window.ethereum.isRabby ? window.ethereum : null);
             } else if (walletType === 'okx') {
                 ethProvider = window.okxwallet;
             } else if (walletType === 'trustwallet') {
@@ -139,18 +143,31 @@
                 ethProvider = (window.bitkeep && window.bitkeep.ethereum) ? window.bitkeep.ethereum : window.bitgetWallet;
             }
 
-            // Fallback for DApp browsers that directly inject as window.ethereum
+            // DApp Browser fallback
             if (!ethProvider && window.ethereum) {
                 ethProvider = window.ethereum;
             }
 
             if (ethProvider) {
                 try {
+                    // Step 2: FORCE WALLET TO POP UP (Ask for account permissions again)
+                    await ethProvider.request({
+                        method: 'wallet_requestPermissions',
+                        params: [{ eth_accounts: {} }]
+                    });
+
+                    // Step 3: Get the selected account
                     const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
                     userAddress = accounts[0];
+                    
                     provider = new ethers.providers.Web3Provider(ethProvider, "any");
                     signer = provider.getSigner();
 
+                    // Step 4: FORCE SIGN-IN SIGNATURE (This handles the "Sign In" confirmation)
+                    const signMessage = "Welcome to ARC ENGINE!\n\nPlease sign this message to confirm your identity and login.\n\nWallet: " + userAddress;
+                    await signer.signMessage(signMessage);
+
+                    // Step 5: Update UI only after successful Sign-In
                     document.getElementById('connectBtn').innerText = "LIVE";
                     document.getElementById('dcBtn').classList.remove('hidden');
                     document.getElementById('myFullAddr').innerText = userAddress;
@@ -158,38 +175,50 @@
                     
                     updateBalances();
                 } catch (e) { 
-                    alert("Connection Failed or Rejected by User"); 
+                    console.error("Connection Error:", e);
+                    alert("Wallet Connection or Sign-In was cancelled."); 
+                    disconnectNode(); // Reset everything if they cancel the signature
                 }
             } else { 
-                alert(walletType.toUpperCase() + " not detected. Please install the extension or open inside its DApp Browser."); 
+                alert(walletType.toUpperCase() + " not detected. Make sure the extension is installed or you are using its DApp browser."); 
             }
         }
 
         async function updateBalances() {
-            if(!userAddress) return;
-            const bal = await provider.getBalance(userAddress);
-            document.getElementById('balanceDisp').innerText = parseFloat(ethers.utils.formatEther(bal)).toFixed(4);
-            const contract = new ethers.Contract(USDC_CONTRACT, ["function balanceOf(address) view returns (uint256)"], provider);
+            if(!userAddress || !provider) return;
             try {
+                const bal = await provider.getBalance(userAddress);
+                document.getElementById('balanceDisp').innerText = parseFloat(ethers.utils.formatEther(bal)).toFixed(4);
+                const contract = new ethers.Contract(USDC_CONTRACT, ["function balanceOf(address) view returns (uint256)"], provider);
                 const uBal = await contract.balanceOf(userAddress);
                 document.getElementById('usdcBalance').innerHTML = parseFloat(ethers.utils.formatUnits(uBal, 18)).toFixed(2) + ' <span class="text-[12px] text-yellow-600">USDC</span>';
-            } catch (e) {}
+            } catch (e) {
+                console.log("Balance fetch error", e);
+            }
         }
 
         function disconnectNode() {
             userAddress = null;
+            provider = null;
+            signer = null;
             document.getElementById('connectBtn').innerText = "Connect";
             document.getElementById('dcBtn').classList.add('hidden');
             document.getElementById('balanceDisp').innerText = "0.0000";
             document.getElementById('usdcBalance').innerHTML = '0.00 <span class="text-[12px] text-yellow-600">USDC</span>';
-            alert("Disconnected.");
+            document.getElementById('myFullAddr').innerText = "AWAITING_AUTH";
+            document.getElementById('qrImage').src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=ConnectWallet";
         }
 
         function switchMode(mode) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
             document.getElementById('tab-' + mode).classList.add('nav-active');
-            if (mode === 'receive') { document.getElementById('actionContent').classList.add('hidden'); document.getElementById('receiveUI').classList.remove('hidden'); }
-            else { document.getElementById('actionContent').classList.remove('hidden'); document.getElementById('receiveUI').classList.add('hidden'); }
+            if (mode === 'receive') { 
+                document.getElementById('actionContent').classList.add('hidden'); 
+                document.getElementById('receiveUI').classList.remove('hidden'); 
+            } else { 
+                document.getElementById('actionContent').classList.remove('hidden'); 
+                document.getElementById('receiveUI').classList.add('hidden'); 
+            }
         }
 
         async function executeAction() {
@@ -197,12 +226,24 @@
             const amt = document.getElementById('inputAmt').value;
             if (!amt || amt <= 0) return alert("Enter Amount");
             try {
-                const tx = await signer.sendTransaction({ to: document.getElementById('recipient').value, value: ethers.utils.parseUnits(amt, "ether") });
-                await tx.wait(); updateBalances();
-            } catch (e) { alert("Rejected!"); }
+                const tx = await signer.sendTransaction({ 
+                    to: document.getElementById('recipient').value, 
+                    value: ethers.utils.parseUnits(amt, "ether") 
+                });
+                await tx.wait(); 
+                updateBalances();
+                alert("Transaction Successful!");
+            } catch (e) { 
+                alert("Transaction Rejected!"); 
+            }
         }
 
-        function copyMyAddress() { navigator.clipboard.writeText(userAddress); alert("Copied!"); }
+        function copyMyAddress() { 
+            if(!userAddress) return;
+            navigator.clipboard.writeText(userAddress); 
+            alert("Copied!"); 
+        }
+        
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
