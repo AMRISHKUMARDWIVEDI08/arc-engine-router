@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARC ENGINE | Universal v12.4</title>
+    <title>ARC ENGINE | Universal v12.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,7 +24,6 @@
         .wallet-opt:hover { border-color: #fff; transform: scale(1.02); }
         .wallet-icon { width: 28px; height: 28px; object-fit: contain; }
         
-        /* Floating Feedback Button */
         .feedback-btn { position: fixed; bottom: 20px; right: 20px; background: #000; color: #facc15; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #facc15; box-shadow: 0 10px 25px rgba(0,0,0,0.5); cursor: pointer; z-index: 999; transition: 0.3s; }
         .feedback-btn:hover { transform: scale(1.1); background: #222; }
     </style>
@@ -146,7 +145,6 @@
             closeModal();
             let ethProvider = null;
 
-            // 1. SPECIFIC WALLET DETECTION
             if (walletType === 'okx') ethProvider = window.okxwallet;
             else if (walletType === 'trustwallet') ethProvider = window.trustwallet || window.trustWallet;
             else if (walletType === 'bitget') ethProvider = (window.bitkeep && window.bitkeep.ethereum) ? window.bitkeep.ethereum : window.bitgetWallet;
@@ -159,31 +157,25 @@
                 }
             }
 
-            // 2. UNIVERSAL MOBILE/DAPP FALLBACK (Yeh error aane se rokega)
-            // Agar specific naam nahi mila par window.ethereum maujood hai (jaise mobile DApps mein hota hai), toh usi ko use karo
             if (!ethProvider && window.ethereum) {
                 ethProvider = window.ethereum;
             }
 
-            // Agar tab bhi kuch na mile, tabhi error dikhao
             if (!ethProvider) {
                 alert("❌ Wallet not detected! Please open this page INSIDE your wallet app's browser (e.g., Trust Wallet, OKX App) or install an extension.");
                 return;
             }
 
             try {
-                // 3. REQUEST CONNECTION
                 const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
                 userAddress = accounts[0];
                 
                 provider = new ethers.providers.Web3Provider(ethProvider, "any");
                 signer = provider.getSigner();
 
-                // 4. SIGNATURE REQUEST
                 const signMessage = "Verify your connection to ARC ENGINE.\n\nWallet: " + userAddress;
                 await signer.signMessage(signMessage);
 
-                // 5. UPDATE UI
                 document.getElementById('connectBtn').innerText = "LIVE";
                 document.getElementById('dcBtn').classList.remove('hidden');
                 document.getElementById('myFullAddr').innerText = userAddress;
@@ -234,22 +226,45 @@
             }
         }
 
+        // ====== FIXED SEND LOGIC - NO UI CHANGES ======
         async function executeAction() {
             if (!userAddress) return openModal();
             const amt = document.getElementById('inputAmt').value;
-            if (!amt || amt <= 0) return alert("Enter Amount");
+            const asset = document.getElementById('assetSelect').value;
+            const recipient = document.getElementById('recipient').value;
+
+            if (!amt || amt <= 0) return alert("Please enter a valid Amount.");
+
             try {
-                const tx = await signer.sendTransaction({ 
-                    to: document.getElementById('recipient').value, 
-                    value: ethers.utils.parseUnits(amt, "ether") 
-                });
+                let tx;
+                alert("Please confirm the transaction in your wallet...");
+
+                if (asset === 'ETH') {
+                    // Send ETH Logic
+                    tx = await signer.sendTransaction({ 
+                        to: recipient, 
+                        value: ethers.utils.parseUnits(amt, "ether") 
+                    });
+                } else if (asset === 'USDC') {
+                    // Send USDC Logic (Calling smart contract transfer)
+                    const contract = new ethers.Contract(USDC_CONTRACT, ["function transfer(address to, uint256 amount) public returns (bool)"], signer);
+                    tx = await contract.transfer(recipient, ethers.utils.parseUnits(amt, 18));
+                }
+                
+                // Wait for the transaction to be mined on the blockchain
                 await tx.wait(); 
+                
+                // Only update balances AFTER the transaction is fully confirmed
                 updateBalances();
-                alert("Transaction Successful!");
+                document.getElementById('inputAmt').value = ""; // Clear the input field
+                alert("Transaction Successful! Balance has been updated.");
+
             } catch (e) { 
-                alert("Transaction Rejected!"); 
+                console.error(e);
+                alert("Transaction Rejected! Ensure you have enough funds/gas fees in your wallet."); 
             }
         }
+        // ===============================================
 
         function copyMyAddress() { 
             if(!userAddress) return;
@@ -257,7 +272,6 @@
             alert("Copied!"); 
         }
 
-        // FEEDBACK FUNCTION ADDED HERE
         function submitFeedback() {
             const feedbackText = document.getElementById('feedbackInput').value;
             if (!feedbackText.trim()) {
@@ -271,5 +285,5 @@
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
-                    </html>
+    </html>
             
