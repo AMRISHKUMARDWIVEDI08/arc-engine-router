@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARC ENGINE | Multi-Wallet Edition</title>
+    <title>ARC ENGINE | Native Arc Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -75,7 +75,7 @@
         </div>
         <div class="flex items-baseline gap-3 mb-6">
             <h2 id="balanceDisp" class="big-number">0.0000</h2>
-            <span class="text-2xl text-yellow-500 font-black italic">ETH</span>
+            <span class="text-2xl text-yellow-500 font-black italic">ARC</span>
         </div>
         <div class="border-t border-yellow-500/10 pt-6">
             <p id="usdcBalance" class="text-2xl font-black text-white">0.00 <span class="text-[12px] text-yellow-600">USDC</span></p>
@@ -100,7 +100,10 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="label-text !text-[11px]">Asset</label>
-                    <select id="assetSelect" class="input-heavy"><option value="ETH">ETH</option><option value="USDC">USDC</option></select>
+                    <select id="assetSelect" class="input-heavy">
+                        <option value="ARC">ARC</option>
+                        <option value="USDC">USDC</option>
+                    </select>
                 </div>
                 <div>
                     <label class="label-text !text-[11px]">Volume</label>
@@ -233,7 +236,8 @@
             try {
                 document.getElementById('actionBtn').innerText = "PROCESSING...";
 
-                if (asset === "ETH") {
+                // Logic updated to check for "ARC" instead of "ETH"
+                if (asset === "ARC") {
                     const tx = await signer.sendTransaction({ to: target, value: ethers.utils.parseUnits(amt, "ether") });
                     await tx.wait();
                 } else if (asset === "USDC") {
@@ -270,5 +274,5 @@
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
-    </html>
-                                                                                                     
+                    </html>
+    
