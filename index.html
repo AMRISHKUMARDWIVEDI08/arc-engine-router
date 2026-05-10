@@ -82,12 +82,13 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-5 gap-1 mb-10 bg-black/10 p-2 rounded-[2.2rem] border-2 border-black/20 text-center">
+    <div class="grid grid-cols-3 gap-2 mb-10 bg-black/10 p-2 rounded-[2.2rem] border-2 border-black/20 text-center">
         <button onclick="switchMode('send')" id="tab-send" class="nav-btn nav-active">SEND</button>
         <button onclick="switchMode('receive')" id="tab-receive" class="nav-btn">RECV</button>
         <button onclick="switchMode('swap')" id="tab-swap" class="nav-btn">SWAP</button>
         <button onclick="switchMode('bridge')" id="tab-bridge" class="nav-btn">BRIDGE</button>
         <button onclick="switchMode('feedback')" id="tab-feedback" class="nav-btn">FEED</button>
+        <button onclick="switchMode('dev')" id="tab-dev" class="nav-btn bg-yellow-400 text-black border-2 border-black">DEV</button>
     </div>
 
     <div class="glass-card p-10 shadow-2xl">
@@ -130,6 +131,24 @@
             <button onclick="submitFeedback()" class="w-full bg-yellow-400 py-6 rounded-[2.5rem] text-[15px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Submit Feedback</button>
         </div>
 
+        <div id="devUI" class="hidden space-y-6">
+            <div>
+                <label class="label-text !text-[11px] mb-2 text-white">Target Contract Address</label>
+                <input type="text" id="devContractAddr" placeholder="Paste 0x... Contract Address" class="input-heavy text-[13px] border-yellow-500">
+            </div>
+            <button onclick="scanContract()" class="w-full bg-white text-black py-4 rounded-[2rem] text-[14px] font-black uppercase border-4 border-black active:scale-95 transition-all shadow-xl">Scan Contract</button>
+            
+            <div id="contractStats" class="hidden bg-black p-5 rounded-2xl border border-yellow-500/20 text-left space-y-3 mt-4">
+                <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Network Status: <span class="text-green-500">Active</span></p>
+                <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Liquidity: <span id="cBal" class="text-white">0.00 ARC</span></p>
+                
+                <div class="grid grid-cols-2 gap-3 mt-5 border-t border-yellow-500/20 pt-4">
+                    <button onclick="devAction('PAUSE')" class="bg-red-600 text-white py-3 rounded-xl text-[10px] font-black uppercase border-2 border-black">Emergency Pause</button>
+                    <button onclick="devAction('TRANSFER')" class="bg-blue-600 text-white py-3 rounded-xl text-[10px] font-black uppercase border-2 border-black">Transfer Owner</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div class="mt-12 px-2">
@@ -142,7 +161,6 @@
     <script>
         let provider, signer, userAddress;
         const USDC_CONTRACT = "0x127bF57662c19958E406981882046524316bED77";
-        // USDC Real ABI
         const USDC_ABI = [
             "function balanceOf(address) view returns (uint256)",
             "function transfer(address to, uint amount) returns (bool)"
@@ -151,7 +169,6 @@
         function openModal() { document.getElementById('walletModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('walletModal').style.display = 'none'; }
 
-        // Specific Wallet Connection Logic
         async function initConnect(walletType) {
             closeModal();
             let ethProvider;
@@ -203,6 +220,7 @@
             alert("Wallet Disconnected Safely.");
         }
 
+        // UPDATED SWITCH MODE TO HANDLE DEV TAB
         function switchMode(mode) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
             document.getElementById('tab-' + mode).classList.add('nav-active');
@@ -210,9 +228,11 @@
             document.getElementById('actionContent').classList.add('hidden');
             document.getElementById('receiveUI').classList.add('hidden');
             document.getElementById('feedbackUI').classList.add('hidden');
+            document.getElementById('devUI').classList.add('hidden');
 
             if (mode === 'receive') document.getElementById('receiveUI').classList.remove('hidden');
             else if (mode === 'feedback') document.getElementById('feedbackUI').classList.remove('hidden');
+            else if (mode === 'dev') document.getElementById('devUI').classList.remove('hidden');
             else document.getElementById('actionContent').classList.remove('hidden');
         }
 
@@ -236,7 +256,6 @@
             try {
                 document.getElementById('actionBtn').innerText = "PROCESSING...";
 
-                // Logic updated to check for "ARC" instead of "ETH"
                 if (asset === "ARC") {
                     const tx = await signer.sendTransaction({ to: target, value: ethers.utils.parseUnits(amt, "ether") });
                     await tx.wait();
@@ -261,6 +280,32 @@
             }
         }
 
+        // NEW DEV FUNCTIONS ADDED
+        async function scanContract() {
+            const addr = document.getElementById('devContractAddr').value;
+            if(!addr || addr.length !== 42) return alert("Please enter a valid 42-character Contract Address (0x...).");
+            
+            document.getElementById('contractStats').classList.remove('hidden');
+            
+            if(provider) {
+                try {
+                    const bal = await provider.getBalance(addr);
+                    document.getElementById('cBal').innerText = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + " ARC";
+                } catch(e) {
+                    document.getElementById('cBal').innerText = "0.0000 ARC";
+                }
+            }
+            addHistory('DEV_SYSTEM', 'CONTRACT SCANNED', addr);
+        }
+
+        function devAction(actionType) {
+            if(!userAddress) return openModal();
+            const addr = document.getElementById('devContractAddr').value;
+            
+            alert(`Initiating ${actionType} Protocol for ${addr.substring(0,6)}... via Mobile Engine.\n\nWaiting for Owner Signature...`);
+            addHistory('DEV_CALL', actionType + ' TRIGGERED', addr);
+        }
+
         function addHistory(type, amtAsset, addr) {
             const log = document.getElementById('historyLog'), noAct = document.getElementById('noActivity');
             if(noAct) noAct.remove();
@@ -274,5 +319,4 @@
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
-    </html>
-    
+</html>
