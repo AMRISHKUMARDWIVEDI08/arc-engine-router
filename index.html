@@ -160,7 +160,10 @@
 
     <script>
         let provider, signer, userAddress;
-        const USDC_CONTRACT = "0x127bF57662c19958E406981882046524316bED77";
+        
+        // YAHAN MAINE ASLI ARC TESTNET USDC ADDRESS FIX KAR DIYA HAI
+        const USDC_CONTRACT = "0x3600000000000000000000000000000000000000";
+        
         const USDC_ABI = [
             "function balanceOf(address) view returns (uint256)",
             "function transfer(address to, uint amount) returns (bool)"
@@ -220,7 +223,6 @@
             alert("Wallet Disconnected Safely.");
         }
 
-        // UPDATED SWITCH MODE TO HANDLE DEV TAB
         function switchMode(mode) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
             document.getElementById('tab-' + mode).classList.add('nav-active');
@@ -280,7 +282,6 @@
             }
         }
 
-        // NEW DEV FUNCTIONS ADDED
         async function scanContract() {
             const addr = document.getElementById('devContractAddr').value;
             if(!addr || addr.length !== 42) return alert("Please enter a valid 42-character Contract Address (0x...).");
@@ -319,4 +320,5 @@
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
-</html>
+                    </html>
+                                                                                                                                                                          
