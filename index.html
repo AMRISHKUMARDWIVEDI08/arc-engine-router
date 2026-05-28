@@ -55,10 +55,10 @@
     <div class="flex justify-between items-center mb-10 pt-8">
         <div class="flex items-center gap-5">
             <div class="logo-3d">
-                <!-- ✅ CORRECT RAW URL - Aapke GitHub repo ke hisaab se -->
+                <!-- FIXED LOGO -->
                 <img src="https://raw.githubusercontent.com/AMRISHKUMARDWIVEDI08/arc-engine-router/main/logo.png" 
-                     class="w-20 h-20 border-4 border-black object-contain bg-white rounded-2xl p-1" 
-                     onerror="this.src='https://arc.xyz/favicon.ico'; console.log('Logo load failed');">
+                     class="w-20 h-20 border-4 border-black object-contain bg-white rounded-3xl p-2" 
+                     onerror="this.src='https://arc.xyz/favicon.ico';">
             </div>
             <div>
                 <h1 class="text-3xl font-black italic text-black leading-none uppercase">ARC ENGINE</h1>
@@ -139,7 +139,6 @@
                 <input type="text" id="devContractAddr" placeholder="Paste 0x... Contract Address" class="input-heavy text-[13px] border-yellow-500">
             </div>
             <button onclick="scanContract()" class="w-full bg-white text-black py-4 rounded-[2rem] text-[14px] font-black uppercase border-4 border-black active:scale-95 transition-all shadow-xl">Scan Contract</button>
-            
             <div id="contractStats" class="hidden bg-black p-5 rounded-2xl border border-yellow-500/20 text-left space-y-3 mt-4">
                 <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Network Status: <span class="text-green-500">Active</span></p>
                 <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Liquidity: <span id="cBal" class="text-white">0.00 ARC</span></p>
