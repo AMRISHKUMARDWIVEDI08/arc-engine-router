@@ -55,9 +55,10 @@
     <div class="flex justify-between items-center mb-10 pt-8">
         <div class="flex items-center gap-5">
             <div class="logo-3d">
-                <img src="https://raw.githubusercontent.com/AMRISHKUMARDWIVEDI08/arc-engir/main/logo.png" 
+                <!-- ✅ CORRECT RAW URL - Aapke GitHub repo ke hisaab se -->
+                <img src="https://raw.githubusercontent.com/AMRISHKUMARDWIVEDI08/arc-engine-router/main/logo.png" 
                      class="w-20 h-20 border-4 border-black object-contain bg-white rounded-2xl p-1" 
-                     onerror="this.src='https://arc.xyz/favicon.ico'">
+                     onerror="this.src='https://arc.xyz/favicon.ico'; console.log('Logo load failed');">
             </div>
             <div>
                 <h1 class="text-3xl font-black italic text-black leading-none uppercase">ARC ENGINE</h1>
@@ -138,6 +139,7 @@
                 <input type="text" id="devContractAddr" placeholder="Paste 0x... Contract Address" class="input-heavy text-[13px] border-yellow-500">
             </div>
             <button onclick="scanContract()" class="w-full bg-white text-black py-4 rounded-[2rem] text-[14px] font-black uppercase border-4 border-black active:scale-95 transition-all shadow-xl">Scan Contract</button>
+            
             <div id="contractStats" class="hidden bg-black p-5 rounded-2xl border border-yellow-500/20 text-left space-y-3 mt-4">
                 <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Network Status: <span class="text-green-500">Active</span></p>
                 <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Liquidity: <span id="cBal" class="text-white">0.00 ARC</span></p>
@@ -152,7 +154,6 @@
         </div>
     </div>
 
-    <!-- Permanent Quick Feedback Section -->
     <div class="mt-10 px-2">
         <h3 class="text-[14px] font-black text-black uppercase mb-4 tracking-[0.4em] italic ml-4">Quick Feedback</h3>
         <div class="glass-card p-8">
@@ -193,10 +194,7 @@
                 document.getElementById('myFullAddr').innerText = userAddress;
                 document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${userAddress}`;
                 updateBalances();
-                addHistory('CONNECTED', walletType.toUpperCase(), userAddress);
-            } catch (e) {
-                alert("Connection Rejected or Failed");
-            }
+            } catch (e) { alert("Connection Failed"); }
         }
 
         async function updateBalances() {
@@ -207,7 +205,7 @@
                 const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, provider);
                 const uBal = await contract.balanceOf(userAddress);
                 document.getElementById('usdcBalance').innerText = parseFloat(ethers.utils.formatUnits(uBal, 18)).toFixed(2) + " USDC";
-            } catch (e) { console.error(e); }
+            } catch (e) {}
         }
 
         function disconnectNode() {
@@ -238,9 +236,7 @@
             const amt = document.getElementById('inputAmt').value;
             const target = document.getElementById('recipient').value;
             const asset = document.getElementById('assetSelect').value;
-
             if (!amt || parseFloat(amt) <= 0) return alert("Enter valid amount");
-
             try {
                 document.getElementById('actionBtn').innerText = "PROCESSING...";
                 if (asset === "ARC") {
@@ -252,10 +248,9 @@
                     await tx.wait();
                 }
                 updateBalances();
-                addHistory('SENT', amt + ' ' + asset, target);
-                alert("Transaction Successful!");
+                alert("✅ Transaction Successful!");
             } catch (e) {
-                alert("Transaction Failed or Rejected");
+                alert("Transaction Failed");
             } finally {
                 document.getElementById('actionBtn').innerText = "Execute Engine";
             }
@@ -263,44 +258,20 @@
 
         function submitFeedback() {
             const msg = document.getElementById('feedbackMsg').value.trim();
-            if (!msg) return alert("Please write feedback");
-            alert("Feedback Submitted! Thank you.");
+            if(!msg) return alert("Please write something");
+            alert("Feedback Submitted!");
             document.getElementById('feedbackMsg').value = '';
         }
 
         function submitQuickFeedback() {
             const msg = document.getElementById('quickFeedback').value.trim();
-            if (!msg) return alert("Please write feedback");
-            alert("Feedback Sent Successfully!");
+            if(!msg) return alert("Please write something");
+            alert("Feedback Sent!");
             document.getElementById('quickFeedback').value = '';
         }
 
-        function scanContract() {
-            const addr = document.getElementById('devContractAddr').value.trim();
-            if (!addr) return alert("Enter contract address");
-            document.getElementById('contractStats').classList.remove('hidden');
-            addHistory('DEV', 'SCAN', addr);
-        }
-
-        function devAction(type) {
-            alert(`DEV Action: ${type} initiated`);
-        }
-
-        function addHistory(type, detail, addr) {
-            const log = document.getElementById('historyLog');
-            const noAct = document.getElementById('noActivity');
-            if (noAct) noAct.remove();
-            const item = document.createElement('div');
-            item.className = "flex justify-between items-center border-b border-yellow-500/10 pb-6";
-            item.innerHTML = `<div><span class="text-yellow-400 font-black">\( {type}</span><span class="text-white ml-4"> \){detail}</span><p class="text-[10px] text-yellow-700"> ${addr.substring(0,25)}...</p></div><div class="text-green-500 font-black">SUCCESS</div>`;
-            log.prepend(item);
-        }
-
         function copyMyAddress() {
-            if (userAddress) {
-                navigator.clipboard.writeText(userAddress);
-                alert("Address Copied!");
-            }
+            if(userAddress) navigator.clipboard.writeText(userAddress).then(() => alert("Copied!"));
         }
 
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
