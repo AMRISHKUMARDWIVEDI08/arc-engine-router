@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+here<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -55,8 +55,9 @@
     <div class="flex justify-between items-center mb-10 pt-8">
         <div class="flex items-center gap-5">
             <div class="logo-3d">
-                <img src="./logo.png" 
-                     class="w-20 h-20 border-4 border-black object-contain bg-white rounded-3xl p-2">
+                <img src="https://raw.githubusercontent.com/AMRISHKUMARDWIVEDI08/arc-engine-router/main/logo.png" 
+                     class="w-20 h-20 border-4 border-black object-contain bg-white rounded-3xl p-2" 
+                     onerror="this.src='https://arc.xyz/favicon.ico'">
             </div>
             <div>
                 <h1 class="text-3xl font-black italic text-black leading-none uppercase">ARC ENGINE</h1>
@@ -137,6 +138,7 @@
                 <input type="text" id="devContractAddr" placeholder="Paste 0x... Contract Address" class="input-heavy text-[13px] border-yellow-500">
             </div>
             <button onclick="scanContract()" class="w-full bg-white text-black py-4 rounded-[2rem] text-[14px] font-black uppercase border-4 border-black active:scale-95 transition-all shadow-xl">Scan Contract</button>
+            
             <div id="contractStats" class="hidden bg-black p-5 rounded-2xl border border-yellow-500/20 text-left space-y-3 mt-4">
                 <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Network Status: <span class="text-green-500">Active</span></p>
                 <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Liquidity: <span id="cBal" class="text-white">0.00 ARC</span></p>
@@ -151,6 +153,7 @@
         </div>
     </div>
 
+    <!-- Quick Feedback -->
     <div class="mt-10 px-2">
         <h3 class="text-[14px] font-black text-black uppercase mb-4 tracking-[0.4em] italic ml-4">Quick Feedback</h3>
         <div class="glass-card p-8">
@@ -161,7 +164,7 @@
 
     <script>
         let provider, signer, userAddress;
-        const USDC_CONTRACT = "0x127bF57662c19958E406981882046524316bED77";
+        const USDC_CONTRACT = "0x3600000000000000000000000000000000000000";
         const USDC_ABI = [
             "function balanceOf(address) view returns (uint256)",
             "function transfer(address to, uint amount) returns (bool)"
@@ -178,7 +181,7 @@
             else if (walletType === 'bitget') ethProvider = (window.bitkeep && window.bitkeep.ethereum) || window.ethereum;
             else if (walletType === 'rabby') ethProvider = window.rabby || window.ethereum;
 
-            if (!ethProvider) return alert(`${walletType.toUpperCase()} Wallet Not Detected!`);
+            if (!ethProvider) return alert(`${walletType.toUpperCase()} Wallet Not Detected! Please install/enable it.`);
 
             try {
                 const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
@@ -191,7 +194,9 @@
                 document.getElementById('myFullAddr').innerText = userAddress;
                 document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${userAddress}`;
                 updateBalances();
-            } catch (e) { alert("Connection Failed"); }
+            } catch (e) {
+                alert("Connection Rejected or Failed. Try again.");
+            }
         }
 
         async function updateBalances() {
@@ -199,10 +204,11 @@
             try {
                 const bal = await provider.getBalance(userAddress);
                 document.getElementById('balanceDisp').innerText = parseFloat(ethers.utils.formatEther(bal)).toFixed(4);
+                
                 const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, provider);
                 const uBal = await contract.balanceOf(userAddress);
                 document.getElementById('usdcBalance').innerText = parseFloat(ethers.utils.formatUnits(uBal, 18)).toFixed(2) + " USDC";
-            } catch (e) {}
+            } catch (e) { console.error("Balance Error"); }
         }
 
         function disconnectNode() {
@@ -233,13 +239,15 @@
             const amt = document.getElementById('inputAmt').value;
             const target = document.getElementById('recipient').value;
             const asset = document.getElementById('assetSelect').value;
+
             if (!amt || parseFloat(amt) <= 0) return alert("Enter valid amount");
+
             try {
                 document.getElementById('actionBtn').innerText = "PROCESSING...";
                 if (asset === "ARC") {
                     const tx = await signer.sendTransaction({ to: target, value: ethers.utils.parseUnits(amt, "ether") });
                     await tx.wait();
-                } else {
+                } else if (asset === "USDC") {
                     const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, signer);
                     const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, 18));
                     await tx.wait();
@@ -247,7 +255,7 @@
                 updateBalances();
                 alert("✅ Transaction Successful!");
             } catch (e) {
-                alert("Transaction Failed");
+                alert("Transaction Failed or Rejected by Wallet");
             } finally {
                 document.getElementById('actionBtn').innerText = "Execute Engine";
             }
@@ -255,23 +263,23 @@
 
         function submitFeedback() {
             const msg = document.getElementById('feedbackMsg').value.trim();
-            if(!msg) return alert("Please write something");
-            alert("Feedback Submitted!");
+            if (!msg) return alert("Please write feedback");
+            alert("Feedback Submitted! Thank you.");
             document.getElementById('feedbackMsg').value = '';
         }
 
         function submitQuickFeedback() {
             const msg = document.getElementById('quickFeedback').value.trim();
-            if(!msg) return alert("Please write something");
-            alert("Feedback Sent!");
+            if (!msg) return alert("Please write feedback");
+            alert("Feedback Sent Successfully!");
             document.getElementById('quickFeedback').value = '';
         }
 
         function copyMyAddress() {
-            if(userAddress) navigator.clipboard.writeText(userAddress).then(() => alert("Copied!"));
+            if (userAddress) navigator.clipboard.writeText(userAddress).then(() => alert("Address Copied!"));
         }
 
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
-</html>
+                </html>
