@@ -153,7 +153,9 @@
             else if (walletType === 'bitget') ethProvider = (window.bitkeep && window.bitkeep.ethereum) || window.ethereum;
             else if (walletType === 'rabby') ethProvider = window.rabby || window.ethereum;
 
-            if (!ethProvider) return alert(walletType.toUpperCase() + " Wallet Not Detected!");
+            if (!ethProvider) {
+                return alert("❌ " + walletType.toUpperCase() + " Wallet Not Detected!");
+            }
 
             try {
                 const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
@@ -168,7 +170,7 @@
                 
                 updateBalances();
             } catch (e) {
-                alert("Connection Rejected.\nPlease allow the wallet popup.");
+                alert("Connection Rejected.\nPlease allow the wallet popup and try again.");
             }
         }
 
@@ -218,7 +220,7 @@
                 updateBalances();
                 alert("✅ Transaction Successful!");
             } catch (e) {
-                alert("Transaction Failed or Rejected");
+                alert("Transaction Failed or Rejected by Wallet");
             } finally {
                 document.getElementById('actionBtn').innerText = "Send USDC";
             }
@@ -238,4 +240,4 @@
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
-        </html>
+    </html>
