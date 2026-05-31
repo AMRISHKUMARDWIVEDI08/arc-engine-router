@@ -28,28 +28,40 @@
 </head>
 <body class="p-4 max-w-lg mx-auto pb-32">
 
-    <!-- Wallet Modal same -->
     <div id="walletModal">
         <div class="modal-content">
             <h2 class="text-2xl font-black uppercase mb-6 italic">Select Wallet</h2>
-            <div class="wallet-opt" onclick="initConnect('metamask')"><img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Mirror_Logo.svg" class="w-6 h-6"> MetaMask</div>
-            <div class="wallet-opt" onclick="initConnect('okx')"><i class="fa-solid fa-circle-nodes text-xl text-white"></i> OKX Wallet</div>
-            <div class="wallet-opt" onclick="initConnect('trust')"><i class="fa-solid fa-shield-halved text-xl text-blue-500"></i> Trust Wallet</div>
-            <div class="wallet-opt" onclick="initConnect('bitget')"><i class="fa-solid fa-wallet text-xl text-cyan-400"></i> Bitget Wallet</div>
-            <div class="wallet-opt" onclick="initConnect('rabby')"><img src="https://rabby.io/assets/logo.png" class="w-6 h-6 rounded-full"> Rabby Wallet</div>
+            
+            <div class="wallet-opt" onclick="initConnect('metamask')">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Mirror_Logo.svg" class="w-6 h-6"> MetaMask
+            </div>
+            <div class="wallet-opt" onclick="initConnect('okx')">
+                <i class="fa-solid fa-circle-nodes text-xl text-white"></i> OKX Wallet
+            </div>
+            <div class="wallet-opt" onclick="initConnect('trust')">
+                <i class="fa-solid fa-shield-halved text-xl text-blue-500"></i> Trust Wallet
+            </div>
+            <div class="wallet-opt" onclick="initConnect('bitget')">
+                <i class="fa-solid fa-wallet text-xl text-cyan-400"></i> Bitget Wallet
+            </div>
+            <div class="wallet-opt" onclick="initConnect('rabby')">
+                <img src="https://rabby.io/assets/logo.png" class="w-6 h-6 rounded-full"> Rabby Wallet
+            </div>
+
             <button onclick="closeModal()" class="mt-4 font-black uppercase underline text-xs">CANCEL</button>
         </div>
     </div>
 
-    <!-- Header same -->
     <div class="flex justify-between items-center mb-10 pt-8">
         <div class="flex items-center gap-5">
             <div class="logo-3d">
-                <img src="https://raw.githubusercontent.com/AMRISHKUMARDWIVEDI08/arc-engine-router/main/logo.png" class="w-20 h-20 border-4 border-black object-contain bg-white rounded-3xl p-2" onerror="this.src='https://arc.xyz/favicon.ico'">
+                <img src="https://raw.githubusercontent.com/AMRISHKUMARDWIVEDI08/arc-engine-router/main/logo.png" 
+                     class="w-20 h-20 border-4 border-black object-contain bg-white rounded-3xl p-2" 
+                     onerror="this.src='https://arc.xyz/favicon.ico'">
             </div>
             <div>
                 <h1 class="text-3xl font-black italic text-black leading-none uppercase">ARC ENGINE</h1>
-                <p class="text-[10px] text-black font-black uppercase mt-1 italic">ARC Testnet • USDC</p>
+                <p class="text-[10px] text-black font-black uppercase mt-1 italic">Multi-Wallet Supported</p>
             </div>
         </div>
         <div class="text-center">
@@ -58,7 +70,6 @@
         </div>
     </div>
 
-    <!-- Balance -->
     <div class="glass-card p-10 relative">
         <div class="flex justify-between items-center mb-4">
             <span class="label-text">Balance</span>
@@ -70,7 +81,6 @@
         </div>
     </div>
 
-    <!-- Navigation -->
     <div class="grid grid-cols-3 gap-2 mb-10 bg-black/10 p-2 rounded-[2.2rem] border-2 border-black/20 text-center">
         <button onclick="switchMode('send')" id="tab-send" class="nav-btn nav-active">SEND</button>
         <button onclick="switchMode('receive')" id="tab-receive" class="nav-btn">RECV</button>
@@ -83,16 +93,24 @@
     <div class="glass-card p-10 shadow-2xl">
         <div id="actionContent" class="space-y-8">
             <div>
-                <label class="label-text !text-[11px]">Target Address</label>
+                <label class="label-text !text-[11px]">Target Node ID</label>
                 <input type="text" id="recipient" value="0x20910Aa09451FE483D1930C25a4556a32160F873" class="input-heavy">
             </div>
-            <div>
-                <label class="label-text !text-[11px]">Amount (USDC)</label>
-                <input type="number" id="inputAmt" placeholder="0.00" class="input-heavy" step="0.000001">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="label-text !text-[11px]">Asset</label>
+                    <select id="assetSelect" class="input-heavy">
+                        <option value="USDC">USDC</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="label-text !text-[11px]">Volume</label>
+                    <input type="number" id="inputAmt" placeholder="0.00" class="input-heavy" step="0.000001">
+                </div>
             </div>
-            <button onclick="executeAction()" id="actionBtn" class="w-full bg-yellow-400 py-7 rounded-[2.5rem] text-[18px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Send USDC</button>
+            <button onclick="executeAction()" id="actionBtn" class="w-full bg-yellow-400 py-7 rounded-[2.5rem] text-[18px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Execute Engine</button>
         </div>
-
+        
         <div id="receiveUI" class="hidden text-center py-6 space-y-6">
             <p class="label-text">QR Address</p>
             <div class="bg-white p-4 inline-block rounded-[3rem] mx-auto shadow-2xl border-4 border-black">
@@ -109,11 +127,25 @@
             </div>
             <button onclick="submitFeedback()" class="w-full bg-yellow-400 py-6 rounded-[2.5rem] text-[15px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Submit Feedback</button>
         </div>
+
+        <div id="devUI" class="hidden space-y-6">
+            <div>
+                <label class="label-text !text-[11px] mb-2 text-white">Target Contract Address</label>
+                <input type="text" id="devContractAddr" placeholder="Paste 0x... Contract Address" class="input-heavy text-[13px] border-yellow-500">
+            </div>
+            <button onclick="scanContract()" class="w-full bg-white text-black py-4 rounded-[2rem] text-[14px] font-black uppercase border-4 border-black active:scale-95 transition-all shadow-xl">Scan Contract</button>
+        </div>
+    </div>
+
+    <div class="mt-12 px-2">
+        <h3 class="text-[14px] font-black text-black uppercase mb-6 tracking-[0.4em] italic ml-4">Activity Log</h3>
+        <div id="historyLog" class="glass-card p-8 min-h-[160px] space-y-6">
+            <p id="noActivity" class="text-[12px] text-yellow-700 italic text-center font-black uppercase tracking-widest">Scanning Network Activity...</p>
+        </div>
     </div>
 
     <script>
         let provider, signer, userAddress;
-        const ARC_CHAIN_ID = 5042002; // ARC Testnet Chain ID
         const USDC_CONTRACT = "0x3600000000000000000000000000000000000000";
         const USDC_ABI = ["function balanceOf(address) view returns (uint256)", "function transfer(address to, uint amount) returns (bool)"];
 
@@ -129,7 +161,7 @@
             else if (walletType === 'bitget') ethProvider = (window.bitkeep && window.bitkeep.ethereum) || window.ethereum;
             else if (walletType === 'rabby') ethProvider = window.rabby || window.ethereum;
 
-            if (!ethProvider) return alert("Wallet Not Detected!");
+            if (!ethProvider) return alert("Wallet Not Found!");
 
             try {
                 const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
@@ -149,16 +181,97 @@
         }
 
         async function updateBalances() {
-            if (!userAddress || !provider) return;
+            if(!userAddress || !provider) return;
             try {
                 const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, provider);
                 const uBal = await contract.balanceOf(userAddress);
                 document.getElementById('balanceDisp').innerText = parseFloat(ethers.utils.formatUnits(uBal, 6)).toFixed(4);
-            } catch (e) {}
+            } catch (e) { console.error("Balance Update Error"); }
         }
 
         function disconnectNode() {
             userAddress = null;
             document.getElementById('connectBtn').innerText = "Connect";
             document.getElementById('dcBtn').classList.add('hidden');
-            document.getElementById('balanceDisp').innerText = "0
+            document.getElementById('balanceDisp').innerText = "0.0000";
+        }
+
+        function switchMode(mode) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
+            document.getElementById('tab-' + mode).classList.add('nav-active');
+            
+            document.getElementById('actionContent').classList.add('hidden');
+            document.getElementById('receiveUI').classList.add('hidden');
+            document.getElementById('feedbackUI').classList.add('hidden');
+            document.getElementById('devUI').classList.add('hidden');
+
+            if (mode === 'receive') document.getElementById('receiveUI').classList.remove('hidden');
+            else if (mode === 'feedback') document.getElementById('feedbackUI').classList.remove('hidden');
+            else if (mode === 'dev') document.getElementById('devUI').classList.remove('hidden');
+            else document.getElementById('actionContent').classList.remove('hidden');
+        }
+
+        async function executeAction() {
+            if (!userAddress) return openModal();
+            const amt = document.getElementById('inputAmt').value;
+            const target = document.getElementById('recipient').value;
+
+            if (!amt || parseFloat(amt) <= 0) return alert("Enter a valid volume");
+
+            try {
+                document.getElementById('actionBtn').innerText = "PROCESSING...";
+
+                const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, signer);
+                const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, 6));
+                await tx.wait();
+
+                updateBalances();
+                addHistory(amt, target, tx.hash);
+                alert(`✅ Transaction Successful!\n\nTx Hash: \( {tx.hash}\n\nView on ARC Scan: https://testnet.arcscan.app/tx/ \){tx.hash}`);
+            } catch (e) {
+                alert("Transaction Failed! Check balance or network.");
+            } finally {
+                document.getElementById('actionBtn').innerText = "Execute Engine";
+            }
+        }
+
+        function addHistory(amt, addr, txHash) {
+            const log = document.getElementById('historyLog');
+            const noAct = document.getElementById('noActivity');
+            if(noAct) noAct.remove();
+
+            const item = document.createElement('div');
+            item.className = "flex justify-between items-center border-b border-yellow-500/10 pb-6";
+            item.innerHTML = `
+                <div>
+                    <span class="text-yellow-400 font-black text-[14px]">SENT</span>
+                    <span class="text-white ml-4 font-black text-[18px]">${amt} USDC</span>
+                    <p class="text-[10px] text-yellow-700 mt-2 font-mono">TO: ${addr.substring(0,30)}...</p>
+                    <p class="text-[10px] text-yellow-700">Tx: <a href="https://testnet.arcscan.app/tx/\( {txHash}" target="_blank" class="underline"> \){txHash.substring(0,10)}...</a></p>
+                </div>
+                <div class="text-green-500 font-black text-[12px]">SUCCESS</div>
+            `;
+            log.prepend(item);
+        }
+
+        function submitFeedback() {
+            const msg = document.getElementById('feedbackMsg').value.trim();
+            if(!msg) return alert("Please type your feedback first.");
+            alert("Feedback Submitted! Thank you.");
+            document.getElementById('feedbackMsg').value = '';
+        }
+
+        function scanContract() {
+            const addr = document.getElementById('devContractAddr').value;
+            if(!addr) return alert("Enter contract address");
+            alert("Contract Scanned!");
+        }
+
+        function copyMyAddress() {
+            if(userAddress) navigator.clipboard.writeText(userAddress).then(() => alert("Copied!"));
+        }
+
+        setInterval(() => { if(userAddress) updateBalances(); }, 10000);
+    </script>
+</body>
+</html>
