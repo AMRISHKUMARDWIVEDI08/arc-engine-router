@@ -1,4 +1,4 @@
-here<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -31,7 +31,6 @@ here<!DOCTYPE html>
     <div id="walletModal">
         <div class="modal-content">
             <h2 class="text-2xl font-black uppercase mb-6 italic">Select Wallet</h2>
-            
             <div class="wallet-opt" onclick="initConnect('metamask')">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Mirror_Logo.svg" class="w-6 h-6"> MetaMask
             </div>
@@ -47,7 +46,6 @@ here<!DOCTYPE html>
             <div class="wallet-opt" onclick="initConnect('rabby')">
                 <img src="https://rabby.io/assets/logo.png" class="w-6 h-6 rounded-full"> Rabby Wallet
             </div>
-
             <button onclick="closeModal()" class="mt-4 font-black uppercase underline text-xs">CANCEL</button>
         </div>
     </div>
@@ -61,7 +59,7 @@ here<!DOCTYPE html>
             </div>
             <div>
                 <h1 class="text-3xl font-black italic text-black leading-none uppercase">ARC ENGINE</h1>
-                <p class="text-[10px] text-black font-black uppercase mt-1 italic">Multi-Wallet Supported</p>
+                <p class="text-[10px] text-black font-black uppercase mt-1 italic">ARC Network • USDC</p>
             </div>
         </div>
         <div class="text-center">
@@ -77,10 +75,7 @@ here<!DOCTYPE html>
         </div>
         <div class="flex items-baseline gap-3 mb-6">
             <h2 id="balanceDisp" class="big-number">0.0000</h2>
-            <span class="text-2xl text-yellow-500 font-black italic">ARC</span>
-        </div>
-        <div class="border-t border-yellow-500/10 pt-6">
-            <p id="usdcBalance" class="text-2xl font-black text-white">0.00 <span class="text-[12px] text-yellow-600">USDC</span></p>
+            <span class="text-2xl text-yellow-500 font-black italic">USDC</span>
         </div>
     </div>
 
@@ -96,27 +91,18 @@ here<!DOCTYPE html>
     <div class="glass-card p-10 shadow-2xl">
         <div id="actionContent" class="space-y-8">
             <div>
-                <label class="label-text !text-[11px]">Target Node ID</label>
+                <label class="label-text !text-[11px]">Target Address</label>
                 <input type="text" id="recipient" value="0x20910Aa09451FE483D1930C25a4556a32160F873" class="input-heavy">
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="label-text !text-[11px]">Asset</label>
-                    <select id="assetSelect" class="input-heavy">
-                        <option value="ARC">ARC</option>
-                        <option value="USDC">USDC</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="label-text !text-[11px]">Volume</label>
-                    <input type="number" id="inputAmt" placeholder="0.00" class="input-heavy" step="0.0001">
-                </div>
+            <div>
+                <label class="label-text !text-[11px]">Amount (USDC)</label>
+                <input type="number" id="inputAmt" placeholder="0.00" class="input-heavy" step="0.000001">
             </div>
-            <button onclick="executeAction()" id="actionBtn" class="w-full bg-yellow-400 py-7 rounded-[2.5rem] text-[18px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Execute Engine</button>
+            <button onclick="executeAction()" id="actionBtn" class="w-full bg-yellow-400 py-7 rounded-[2.5rem] text-[18px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Send USDC</button>
         </div>
         
         <div id="receiveUI" class="hidden text-center py-6 space-y-6">
-            <p class="label-text">QR Address</p>
+            <p class="label-text">Your Address</p>
             <div class="bg-white p-4 inline-block rounded-[3rem] mx-auto shadow-2xl border-4 border-black">
                 <img id="qrImage" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=ConnectWallet" class="w-44 h-44">
             </div>
@@ -127,7 +113,7 @@ here<!DOCTYPE html>
         <div id="feedbackUI" class="hidden space-y-6">
             <div>
                 <label class="label-text !text-[11px] mb-2">Leave Feedback</label>
-                <textarea id="feedbackMsg" rows="4" placeholder="Tell us how we can improve..." class="input-heavy resize-none text-[14px]"></textarea>
+                <textarea id="feedbackMsg" rows="4" placeholder="Tell us how we can improve ARC Engine..." class="input-heavy resize-none text-[14px]"></textarea>
             </div>
             <button onclick="submitFeedback()" class="w-full bg-yellow-400 py-6 rounded-[2.5rem] text-[15px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Submit Feedback</button>
         </div>
@@ -138,22 +124,16 @@ here<!DOCTYPE html>
                 <input type="text" id="devContractAddr" placeholder="Paste 0x... Contract Address" class="input-heavy text-[13px] border-yellow-500">
             </div>
             <button onclick="scanContract()" class="w-full bg-white text-black py-4 rounded-[2rem] text-[14px] font-black uppercase border-4 border-black active:scale-95 transition-all shadow-xl">Scan Contract</button>
-            
-            <div id="contractStats" class="hidden bg-black p-5 rounded-2xl border border-yellow-500/20 text-left space-y-3 mt-4">
-                <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Network Status: <span class="text-green-500">Active</span></p>
-                <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Liquidity: <span id="cBal" class="text-white">0.00 ARC</span></p>
-            </div>
         </div>
     </div>
 
     <div class="mt-12 px-2">
         <h3 class="text-[14px] font-black text-black uppercase mb-6 tracking-[0.4em] italic ml-4">Activity Log</h3>
         <div id="historyLog" class="glass-card p-8 min-h-[160px] space-y-6">
-            <p id="noActivity" class="text-[12px] text-yellow-700 italic text-center font-black uppercase tracking-widest">Scanning Network Activity...</p>
+            <p id="noActivity" class="text-[12px] text-yellow-700 italic text-center font-black uppercase tracking-widest">No transactions yet</p>
         </div>
     </div>
 
-    <!-- Quick Feedback -->
     <div class="mt-10 px-2">
         <h3 class="text-[14px] font-black text-black uppercase mb-4 tracking-[0.4em] italic ml-4">Quick Feedback</h3>
         <div class="glass-card p-8">
@@ -181,7 +161,7 @@ here<!DOCTYPE html>
             else if (walletType === 'bitget') ethProvider = (window.bitkeep && window.bitkeep.ethereum) || window.ethereum;
             else if (walletType === 'rabby') ethProvider = window.rabby || window.ethereum;
 
-            if (!ethProvider) return alert(`${walletType.toUpperCase()} Wallet Not Detected! Please install/enable it.`);
+            if (!ethProvider) return alert(`${walletType.toUpperCase()} Wallet Not Detected!`);
 
             try {
                 const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
@@ -193,9 +173,10 @@ here<!DOCTYPE html>
                 document.getElementById('dcBtn').classList.remove('hidden');
                 document.getElementById('myFullAddr').innerText = userAddress;
                 document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${userAddress}`;
+                
                 updateBalances();
             } catch (e) {
-                alert("Connection Rejected or Failed. Try again.");
+                alert("Connection Rejected");
             }
         }
 
@@ -203,12 +184,11 @@ here<!DOCTYPE html>
             if (!userAddress || !provider) return;
             try {
                 const bal = await provider.getBalance(userAddress);
-                document.getElementById('balanceDisp').innerText = parseFloat(ethers.utils.formatEther(bal)).toFixed(4);
+                const usdcContract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, provider);
+                const uBal = await usdcContract.balanceOf(userAddress);
                 
-                const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, provider);
-                const uBal = await contract.balanceOf(userAddress);
-                document.getElementById('usdcBalance').innerText = parseFloat(ethers.utils.formatUnits(uBal, 18)).toFixed(2) + " USDC";
-            } catch (e) { console.error("Balance Error"); }
+                document.getElementById('balanceDisp').innerText = parseFloat(ethers.utils.formatUnits(uBal, 6)).toFixed(4);
+            } catch (e) { console.error(e); }
         }
 
         function disconnectNode() {
@@ -216,7 +196,6 @@ here<!DOCTYPE html>
             document.getElementById('connectBtn').innerText = "Connect";
             document.getElementById('dcBtn').classList.add('hidden');
             document.getElementById('balanceDisp').innerText = "0.0000";
-            document.getElementById('usdcBalance').innerText = "0.00 USDC";
         }
 
         function switchMode(mode) {
@@ -238,27 +217,43 @@ here<!DOCTYPE html>
             if (!userAddress) return openModal();
             const amt = document.getElementById('inputAmt').value;
             const target = document.getElementById('recipient').value;
-            const asset = document.getElementById('assetSelect').value;
 
             if (!amt || parseFloat(amt) <= 0) return alert("Enter valid amount");
 
             try {
                 document.getElementById('actionBtn').innerText = "PROCESSING...";
-                if (asset === "ARC") {
-                    const tx = await signer.sendTransaction({ to: target, value: ethers.utils.parseUnits(amt, "ether") });
-                    await tx.wait();
-                } else if (asset === "USDC") {
-                    const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, signer);
-                    const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, 18));
-                    await tx.wait();
-                }
+                const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, signer);
+                const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, 6));
+                await tx.wait();
+
                 updateBalances();
+                addHistory(amt, target);
                 alert("✅ Transaction Successful!");
             } catch (e) {
-                alert("Transaction Failed or Rejected by Wallet");
+                alert("Transaction Failed or Rejected");
             } finally {
-                document.getElementById('actionBtn').innerText = "Execute Engine";
+                document.getElementById('actionBtn').innerText = "Send USDC";
             }
+        }
+
+        function addHistory(amount, to) {
+            const log = document.getElementById('historyLog');
+            const noAct = document.getElementById('noActivity');
+            if (noAct) noAct.remove();
+
+            const time = new Date().toLocaleString('en-IN');
+            const item = document.createElement('div');
+            item.className = "flex justify-between items-center border-b border-yellow-500/10 pb-6";
+            item.innerHTML = `
+                <div>
+                    <span class="text-yellow-400 font-black">SENT</span>
+                    <span class="text-white ml-4 font-black">${amount} USDC</span>
+                    <p class="text-[10px] text-yellow-700 mt-1">${time}</p>
+                    <p class="text-[10px] text-yellow-700 font-mono">TO: ${to.substring(0,22)}...</p>
+                </div>
+                <div class="text-green-500 font-black">SUCCESS</div>
+            `;
+            log.prepend(item);
         }
 
         function submitFeedback() {
@@ -279,7 +274,7 @@ here<!DOCTYPE html>
             if (userAddress) navigator.clipboard.writeText(userAddress).then(() => alert("Address Copied!"));
         }
 
-        setInterval(() => { if(userAddress) updateBalances(); }, 10000);
+        setInterval(() => { if(userAddress) updateBalances(); }, 8000);
     </script>
 </body>
-                </html>
+</html>
