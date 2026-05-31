@@ -127,14 +127,6 @@
             </div>
             <button onclick="submitFeedback()" class="w-full bg-yellow-400 py-6 rounded-[2.5rem] text-[15px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Submit Feedback</button>
         </div>
-
-        <div id="devUI" class="hidden space-y-6">
-            <div>
-                <label class="label-text !text-[11px] mb-2 text-white">Target Contract Address</label>
-                <input type="text" id="devContractAddr" placeholder="Paste 0x... Contract Address" class="input-heavy text-[13px] border-yellow-500">
-            </div>
-            <button onclick="scanContract()" class="w-full bg-white text-black py-4 rounded-[2rem] text-[14px] font-black uppercase border-4 border-black active:scale-95 transition-all shadow-xl">Scan Contract</button>
-        </div>
     </div>
 
     <div class="mt-12 px-2">
@@ -176,7 +168,7 @@
                 
                 updateBalances();
             } catch (e) {
-                alert("Connection Rejected. Please allow popup.");
+                alert("Connection Rejected. Please allow the popup.");
             }
         }
 
@@ -236,21 +228,11 @@
         }
 
         function addHistory(amt, addr, txHash) {
-            const log = document.getElementById('historyLog');
-            const noAct = document.getElementById('noActivity');
+            const log = document.getElementById('historyLog'), noAct = document.getElementById('noActivity');
             if(noAct) noAct.remove();
-
             const item = document.createElement('div');
             item.className = "flex justify-between items-center border-b border-yellow-500/10 pb-6";
-            item.innerHTML = `
-                <div>
-                    <span class="text-yellow-400 font-black text-[14px]">SENT</span>
-                    <span class="text-white ml-4 font-black text-[18px]">${amt} USDC</span>
-                    <p class="text-[10px] text-yellow-700 mt-2 font-mono">TO: ${addr.substring(0,30)}...</p>
-                    <p class="text-[10px] text-yellow-700">Tx: <a href="https://testnet.arcscan.app/tx/\( {txHash}" target="_blank" class="underline"> \){txHash.substring(0,10)}...</a></p>
-                </div>
-                <div class="text-green-500 font-black text-[12px]">SUCCESS</div>
-            `;
+            item.innerHTML = `<div><span class="text-yellow-400 font-black text-[14px]">SENT</span><span class="text-white ml-4 font-black text-[18px]">${amt} USDC</span><p class="text-[10px] text-yellow-700 mt-2 font-mono uppercase">TO: \( {addr.substring(0,30)}...</p><p class="text-[10px] text-yellow-700">Tx: <a href="https://testnet.arcscan.app/tx/ \){txHash}" target="_blank" class="underline">${txHash.substring(0,12)}...</a></p></div><div class="text-right text-green-500 font-black text-[12px]">SUCCESS</div>`;
             log.prepend(item);
         }
 
@@ -261,14 +243,8 @@
             document.getElementById('feedbackMsg').value = '';
         }
 
-        function scanContract() {
-            const addr = document.getElementById('devContractAddr').value;
-            if(!addr) return alert("Enter contract address");
-            alert("Contract Scanned!");
-        }
-
-        function copyMyAddress() {
-            if(userAddress) navigator.clipboard.writeText(userAddress).then(() => alert("Copied!"));
+        function copyMyAddress() { 
+            if(userAddress) { navigator.clipboard.writeText(userAddress); alert("Copied!"); } 
         }
 
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
