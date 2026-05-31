@@ -217,9 +217,12 @@
                 const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, 6));
                 await tx.wait();
 
-                updateBalances();
+                // Force balance update after successful transaction
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for blockchain confirmation
+                await updateBalances();
+
                 addHistory(amt, target, tx.hash);
-                alert(`✅ Transaction Successful!\n\nTx Hash: \( {tx.hash}\n\nView on ARC Scan: https://testnet.arcscan.app/tx/ \){tx.hash}`);
+                alert(`✅ Transaction Successful!\n\nTx Hash: \( {tx.hash}\n\nCheck on ARC Scan → https://testnet.arcscan.app/tx/ \){tx.hash}`);
             } catch (e) {
                 alert("Transaction Failed! Check balance or network.");
             } finally {
@@ -247,7 +250,7 @@
             if(userAddress) { navigator.clipboard.writeText(userAddress); alert("Copied!"); } 
         }
 
-        setInterval(() => { if(userAddress) updateBalances(); }, 10000);
+        setInterval(() => { if(userAddress) updateBalances(); }, 8000);
     </script>
 </body>
 </html>
