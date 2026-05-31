@@ -31,6 +31,7 @@
     <div id="walletModal">
         <div class="modal-content">
             <h2 class="text-2xl font-black uppercase mb-6 italic">Select Wallet</h2>
+            
             <div class="wallet-opt" onclick="initConnect('metamask')">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Mirror_Logo.svg" class="w-6 h-6"> MetaMask
             </div>
@@ -46,6 +47,7 @@
             <div class="wallet-opt" onclick="initConnect('rabby')">
                 <img src="https://rabby.io/assets/logo.png" class="w-6 h-6 rounded-full"> Rabby Wallet
             </div>
+
             <button onclick="closeModal()" class="mt-4 font-black uppercase underline text-xs">CANCEL</button>
         </div>
     </div>
@@ -102,7 +104,7 @@
         </div>
         
         <div id="receiveUI" class="hidden text-center py-6 space-y-6">
-            <p class="label-text">Your Address</p>
+            <p class="label-text">QR Address</p>
             <div class="bg-white p-4 inline-block rounded-[3rem] mx-auto shadow-2xl border-4 border-black">
                 <img id="qrImage" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=ConnectWallet" class="w-44 h-44">
             </div>
@@ -113,7 +115,7 @@
         <div id="feedbackUI" class="hidden space-y-6">
             <div>
                 <label class="label-text !text-[11px] mb-2">Leave Feedback</label>
-                <textarea id="feedbackMsg" rows="4" placeholder="Tell us how we can improve ARC Engine..." class="input-heavy resize-none text-[14px]"></textarea>
+                <textarea id="feedbackMsg" rows="4" placeholder="Tell us how we can improve..." class="input-heavy resize-none text-[14px]"></textarea>
             </div>
             <button onclick="submitFeedback()" class="w-full bg-yellow-400 py-6 rounded-[2.5rem] text-[15px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Submit Feedback</button>
         </div>
@@ -134,21 +136,10 @@
         </div>
     </div>
 
-    <div class="mt-10 px-2">
-        <h3 class="text-[14px] font-black text-black uppercase mb-4 tracking-[0.4em] italic ml-4">Quick Feedback</h3>
-        <div class="glass-card p-8">
-            <textarea id="quickFeedback" rows="3" placeholder="Your suggestion or issue here..." class="input-heavy resize-none text-[14px]"></textarea>
-            <button onclick="submitQuickFeedback()" class="w-full mt-4 bg-yellow-400 py-5 rounded-[2.5rem] text-[15px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Send Feedback</button>
-        </div>
-    </div>
-
     <script>
         let provider, signer, userAddress;
         const USDC_CONTRACT = "0x3600000000000000000000000000000000000000";
-        const USDC_ABI = [
-            "function balanceOf(address) view returns (uint256)",
-            "function transfer(address to, uint amount) returns (bool)"
-        ];
+        const USDC_ABI = ["function balanceOf(address) view returns (uint256)", "function transfer(address to, uint amount) returns (bool)"];
 
         function openModal() { document.getElementById('walletModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('walletModal').style.display = 'none'; }
@@ -156,12 +147,13 @@
         async function initConnect(walletType) {
             closeModal();
             let ethProvider = window.ethereum;
+
             if (walletType === 'okx') ethProvider = window.okxwallet || window.ethereum;
             else if (walletType === 'trust') ethProvider = window.trustwallet || window.ethereum;
             else if (walletType === 'bitget') ethProvider = (window.bitkeep && window.bitkeep.ethereum) || window.ethereum;
             else if (walletType === 'rabby') ethProvider = window.rabby || window.ethereum;
 
-            if (!ethProvider) return alert(`${walletType.toUpperCase()} Wallet Not Detected!`);
+            if (!ethProvider) return alert(walletType.toUpperCase() + " Wallet Not Detected!");
 
             try {
                 const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
@@ -176,17 +168,15 @@
                 
                 updateBalances();
             } catch (e) {
-                alert("Connection Rejected");
+                alert("Connection Rejected.\nPlease allow the wallet popup.");
             }
         }
 
         async function updateBalances() {
             if (!userAddress || !provider) return;
             try {
-                const bal = await provider.getBalance(userAddress);
-                const usdcContract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, provider);
-                const uBal = await usdcContract.balanceOf(userAddress);
-                
+                const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, provider);
+                const uBal = await contract.balanceOf(userAddress);
                 document.getElementById('balanceDisp').innerText = parseFloat(ethers.utils.formatUnits(uBal, 6)).toFixed(4);
             } catch (e) { console.error(e); }
         }
@@ -225,9 +215,7 @@
                 const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, signer);
                 const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, 6));
                 await tx.wait();
-
                 updateBalances();
-                addHistory(amt, target);
                 alert("✅ Transaction Successful!");
             } catch (e) {
                 alert("Transaction Failed or Rejected");
@@ -236,45 +224,18 @@
             }
         }
 
-        function addHistory(amount, to) {
-            const log = document.getElementById('historyLog');
-            const noAct = document.getElementById('noActivity');
-            if (noAct) noAct.remove();
-
-            const time = new Date().toLocaleString('en-IN');
-            const item = document.createElement('div');
-            item.className = "flex justify-between items-center border-b border-yellow-500/10 pb-6";
-            item.innerHTML = `
-                <div>
-                    <span class="text-yellow-400 font-black">SENT</span>
-                    <span class="text-white ml-4 font-black">${amount} USDC</span>
-                    <p class="text-[10px] text-yellow-700 mt-1">${time}</p>
-                    <p class="text-[10px] text-yellow-700 font-mono">TO: ${to.substring(0,22)}...</p>
-                </div>
-                <div class="text-green-500 font-black">SUCCESS</div>
-            `;
-            log.prepend(item);
-        }
-
         function submitFeedback() {
             const msg = document.getElementById('feedbackMsg').value.trim();
-            if (!msg) return alert("Please write feedback");
+            if(!msg) return alert("Please write feedback");
             alert("Feedback Submitted! Thank you.");
             document.getElementById('feedbackMsg').value = '';
         }
 
-        function submitQuickFeedback() {
-            const msg = document.getElementById('quickFeedback').value.trim();
-            if (!msg) return alert("Please write feedback");
-            alert("Feedback Sent Successfully!");
-            document.getElementById('quickFeedback').value = '';
-        }
-
         function copyMyAddress() {
-            if (userAddress) navigator.clipboard.writeText(userAddress).then(() => alert("Address Copied!"));
+            if(userAddress) navigator.clipboard.writeText(userAddress).then(() => alert("Copied!"));
         }
 
-        setInterval(() => { if(userAddress) updateBalances(); }, 8000);
+        setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
-</html>
+        </html>
