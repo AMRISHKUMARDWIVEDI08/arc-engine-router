@@ -33,7 +33,7 @@
             <h2 class="text-2xl font-black uppercase mb-6 italic">Select Wallet</h2>
             
             <div class="wallet-opt" onclick="initConnect('metamask')">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Mirror_Logo.svg" class="w-6 h-6"> MetaMask
+                <img src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/LOGOS/MetaMask_Logo_fiat.png" class="w-6 h-6 object-contain"> MetaMask
             </div>
             <div class="wallet-opt" onclick="initConnect('okx')">
                 <i class="fa-solid fa-circle-nodes text-xl text-white"></i> OKX Wallet
@@ -45,7 +45,7 @@
                 <i class="fa-solid fa-wallet text-xl text-cyan-400"></i> Bitget Wallet
             </div>
             <div class="wallet-opt" onclick="initConnect('rabby')">
-                <img src="https://rabby.io/assets/logo.png" class="w-6 h-6 rounded-full"> Rabby Wallet
+                <img src="https://rabby.io/docs/rabby-logo.png" class="w-6 h-6 rounded-full object-contain" onerror="this.src='https://assets.coingecko.com/coins/images/34336/large/rabby.png'"> Rabby Wallet
             </div>
 
             <button onclick="closeModal()" class="mt-4 font-black uppercase underline text-xs">CANCEL</button>
@@ -212,7 +212,6 @@
                     document.getElementById('myFullAddr').innerText = userAddress;
                     document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${userAddress}`;
                     
-                    // ON WALLET CONNECT RECIPIENT FIELD INITIALIZED SAFELY
                     const targetField = document.getElementById('recipient');
                     targetField.value = "0x20910Aa09451FE483D1930C25a4556a32160F873";
                     targetField.removeAttribute('readonly');
