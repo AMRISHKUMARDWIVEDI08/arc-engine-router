@@ -3,119 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARC ENGINE | Native Arc Edition</title>
+    <title>ARC ENGINE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Inter:wght@400;700;900&display=swap');
-        body { background-color: #facc15; color: #000; font-family: 'Inter', sans-serif; overflow-x: hidden; margin: 0; }
-        .glass-card { background: #000 !important; border: 4px solid #000; border-radius: 2.8rem; box-shadow: 0 35px 70px rgba(0,0,0,0.45); margin-bottom: 25px; }
-        .big-number { font-family: 'Orbitron', sans-serif; font-size: 4.5rem; font-weight: 900; color: #fff; letter-spacing: -3px; line-height: 1; }
-        .label-text { font-size: 14px; font-weight: 900; color: #facc15; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 10px; }
-        .input-heavy { background: #111; border: 3px solid #333; padding: 22px; border-radius: 20px; width: 100%; color: #facc15; font-weight: 900; font-size: 1.2rem; outline: none; }
+        body { 
+            background: linear-gradient(135deg, #facc15, #eab308); 
+            color: #000; 
+            font-family: system-ui, -apple-system, sans-serif; 
+            min-height: 100vh;
+        }
+        .glass-card { 
+            background: rgba(0,0,0,0.95); 
+            border: 4px solid #000; 
+            border-radius: 2.8rem; 
+            box-shadow: 0 35px 70px rgba(0,0,0,0.5);
+        }
+        .big-number { font-size: 4.2rem; font-weight: 900; color: white; }
     </style>
 </head>
-<body class="p-4 max-w-lg mx-auto pb-24">
+<body class="p-4 max-w-lg mx-auto">
 
-    <!-- Rest of your HTML same rahega (modal, header, tabs etc.) -->
+    <div class="text-center py-8">
+        <h1 class="text-4xl font-black tracking-tighter">ARC ENGINE</h1>
+        <p class="text-black/70 font-medium">Native Arc Testnet</p>
+    </div>
+
+    <div class="glass-card p-8 text-white">
+        <button onclick="connectWallet()" id="connectBtn"
+                class="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-black py-6 rounded-3xl text-xl transition">
+            Connect Wallet
+        </button>
+    </div>
 
     <script>
-        // === ARC TESTNET CONFIG ===
-        const ARC_TESTNET = {
-            chainId: "0x4C9A02",           // 5042002 in hex
-            rpcUrl: "https://rpc.testnet.arc.network",
-            usdcAddress: "0x3600000000000000000000000000000000000000",  // Official Arc Testnet USDC
-            usdcDecimals: 6
+        async function connectWallet() {
+            if (!window.ethereum) return alert("MetaMask install karo");
+
+            try {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                const signer = provider.getSigner();
+                const address = await signer.getAddress();
+
+                document.getElementById("connectBtn").innerHTML = `✅ Connected<br><small class="text-xs">${address.slice(0,8)}...${address.slice(-6)}</small>`;
+                alert("Wallet Connected Successfully!");
+            } catch(e) {
+                alert("Connection failed");
+            }
+        }
+
+        // Auto connect on load
+        window.onload = () => {
+            if (window.ethereum) console.log("Wallet detected");
         };
-
-        let provider, signer, userAddress;
-
-        async function initConnect() {
-            if (!window.ethereum) return alert("MetaMask ya koi wallet install karo");
-
-            try {
-                // Switch to Arc Testnet
-                await window.ethereum.request({
-                    method: 'wallet_addEthereumChain',
-                    params: [{
-                        chainId: ARC_TESTNET.chainId,
-                        chainName: "Arc Testnet",
-                        rpcUrls: [ARC_TESTNET.rpcUrl],
-                        nativeCurrency: { name: "ARC", symbol: "ARC", decimals: 18 },
-                        blockExplorerUrls: ["https://testnet.arcscan.app"]
-                    }]
-                });
-
-                await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: ARC_TESTNET.chainId }] });
-
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                userAddress = accounts[0];
-                provider = new ethers.providers.Web3Provider(window.ethereum);
-                signer = provider.getSigner();
-
-                document.getElementById('connectBtn').innerText = "CONNECTED";
-                updateBalances();
-            } catch (e) {
-                console.error(e);
-                alert("Arc Testnet add karne mein dikkat aayi. Manual switch karke try karo.");
-            }
-        }
-
-        async function updateBalances() {
-            if (!userAddress) return;
-
-            // ARC Balance
-            const arcBal = await provider.getBalance(userAddress);
-            document.getElementById('balanceDisp').innerText = parseFloat(ethers.utils.formatEther(arcBal)).toFixed(4);
-
-            // USDC Balance
-            const usdcContract = new ethers.Contract(
-                ARC_TESTNET.usdcAddress,
-                ["function balanceOf(address) view returns (uint256)"],
-                provider
-            );
-            const usdcBal = await usdcContract.balanceOf(userAddress);
-            document.getElementById('usdcBalance').innerText = 
-                parseFloat(ethers.utils.formatUnits(usdcBal, ARC_TESTNET.usdcDecimals)).toFixed(4) + " USDC";
-        }
-
-        // Transfer function bhi update kar do (USDC ke liye)
-        async function executeAction() {
-            if (!signer) return alert("Pehle wallet connect karo");
-
-            const amt = document.getElementById('inputAmt').value;
-            const target = document.getElementById('recipient').value;
-            const asset = document.getElementById('assetSelect').value;
-
-            if (!amt || amt <= 0) return alert("Amount daalo");
-
-            try {
-                if (asset === "USDC") {
-                    const contract = new ethers.Contract(ARC_TESTNET.usdcAddress, [
-                        "function transfer(address to, uint256 amount) returns (bool)"
-                    ], signer);
-
-                    const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, ARC_TESTNET.usdcDecimals));
-                    await tx.wait();
-                    alert(`✅ ${amt} USDC Sent!`);
-                } else {
-                    // ARC native transfer
-                    const tx = await signer.sendTransaction({
-                        to: target,
-                        value: ethers.utils.parseEther(amt)
-                    });
-                    await tx.wait();
-                    alert(`✅ ${amt} ARC Sent!`);
-                }
-
-                updateBalances();
-            } catch (e) {
-                alert("Transaction failed: " + e.message);
-            }
-        }
-
-        // Baaki code same rakh sakte ho...
     </script>
 </body>
 </html>
