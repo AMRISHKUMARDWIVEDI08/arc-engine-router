@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Inter:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght=900&family=Inter:wght=400;700;900&display=swap');
         body { background-color: #facc15; color: #000; font-family: 'Inter', sans-serif; overflow-x: hidden; margin: 0; }
         .glass-card { background: #000 !important; border: 4px solid #000; border-radius: 2.8rem; box-shadow: 0 35px 70px rgba(0,0,0,0.45); margin-bottom: 25px; }
         @keyframes spin3D { 0% { transform: perspective(1000px) rotateY(0deg); } 100% { transform: perspective(1000px) rotateY(360deg); } }
@@ -70,15 +70,12 @@
 
     <div class="glass-card p-10 relative">
         <div class="flex justify-between items-center mb-4">
-            <span class="label-text">Balance</span>
+            <span class="label-text">USDC Balance</span>
             <button onclick="disconnectNode()" id="dcBtn" class="hidden bg-red-600 text-white text-[9px] px-3 py-1 rounded-full font-black border-2 border-black">DISCONNECT</button>
         </div>
-        <div class="flex items-baseline gap-3 mb-6">
-            <h2 id="balanceDisp" class="big-number">0.0000</h2>
-            <span class="text-2xl text-yellow-500 font-black italic">ARC</span>
-        </div>
-        <div class="border-t border-yellow-500/10 pt-6">
-            <p id="usdcBalance" class="text-2xl font-black text-white">0.00 <span class="text-[12px] text-yellow-600">USDC</span></p>
+        <div class="flex items-baseline gap-3 mb-2">
+            <h2 id="usdcBalanceBig" class="big-number">0.00</h2>
+            <span class="text-2xl text-yellow-500 font-black italic">USDC</span>
         </div>
     </div>
 
@@ -102,7 +99,6 @@
                 <div>
                     <label class="label-text !text-[11px]">Asset</label>
                     <select id="assetSelect" class="input-heavy">
-                        <option value="ARC">ARC</option>
                         <option value="USDC">USDC</option>
                     </select>
                 </div>
@@ -140,7 +136,7 @@
             
             <div id="contractStats" class="hidden bg-black p-5 rounded-2xl border border-yellow-500/20 text-left space-y-3 mt-4">
                 <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Network Status: <span class="text-green-500">Active</span></p>
-                <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Liquidity: <span id="cBal" class="text-white">0.00 ARC</span></p>
+                <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Liquidity: <span id="cBal" class="text-white">0.00 USDC</span></p>
                 
                 <div class="grid grid-cols-2 gap-3 mt-5 border-t border-yellow-500/20 pt-4">
                     <button onclick="devAction('PAUSE')" class="bg-red-600 text-white py-3 rounded-xl text-[10px] font-black uppercase border-2 border-black">Emergency Pause</button>
@@ -166,6 +162,15 @@
             "function transfer(address to, uint amount) returns (bool)"
         ];
 
+        // NATIVE ARC TESTNET CHAIN PARAMETERS CONFIG
+        const ARC_NET_CONFIG = {
+            chainId: "0x6f", // chain id 111
+            chainName: "Arc Testnet",
+            rpcUrls: ["https://rpc.testnet.arc.io"],
+            nativeCurrency: { name: "ARC", symbol: "ARC", decimals: 18 },
+            blockExplorerUrls: ["https://arcscan.io"]
+        };
+
         function openModal() { document.getElementById('walletModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('walletModal').style.display = 'none'; }
 
@@ -187,6 +192,23 @@
                     provider = new ethers.providers.Web3Provider(ethProvider, "any");
                     signer = provider.getSigner();
 
+                    // FIXED WALLET SWITCH NETWORK PROMPT PROTOCOL
+                    try {
+                        await ethProvider.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: ARC_NET_CONFIG.chainId }]
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            try {
+                                await ethProvider.request({
+                                    method: 'wallet_addEthereumChain',
+                                    params: [ARC_NET_CONFIG]
+                                });
+                            } catch (addError) { console.error("Could not add network"); }
+                        }
+                    }
+
                     document.getElementById('connectBtn').innerText = "LIVE";
                     document.getElementById('dcBtn').classList.remove('hidden');
                     document.getElementById('myFullAddr').innerText = userAddress;
@@ -202,12 +224,9 @@
         async function updateBalances() {
             if(!userAddress) return;
             try {
-                const bal = await provider.getBalance(userAddress);
-                document.getElementById('balanceDisp').innerText = parseFloat(ethers.utils.formatEther(bal)).toFixed(4);
-                
                 const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, provider);
                 const uBal = await contract.balanceOf(userAddress);
-                document.getElementById('usdcBalance').innerText = parseFloat(ethers.utils.formatUnits(uBal, 18)).toFixed(2) + " USDC";
+                document.getElementById('usdcBalanceBig').innerText = parseFloat(ethers.utils.formatUnits(uBal, 18)).toFixed(2);
             } catch (e) { console.error("Balance Update Error"); }
         }
 
@@ -215,12 +234,10 @@
             userAddress = null;
             document.getElementById('connectBtn').innerText = "Connect";
             document.getElementById('dcBtn').classList.add('hidden');
-            document.getElementById('balanceDisp').innerText = "0.0000";
-            document.getElementById('usdcBalance').innerText = "0.00 USDC";
+            document.getElementById('usdcBalanceBig').innerText = "0.00";
             alert("Wallet Disconnected Safely.");
         }
 
-        // UPDATED SWITCH MODE TO HANDLE DEV TAB
         function switchMode(mode) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
             document.getElementById('tab-' + mode).classList.add('nav-active');
@@ -242,7 +259,7 @@
             
             alert("Feedback Submitted! Thank you for helping us improve.");
             document.getElementById('feedbackMsg').value = '';
-            addHistory('FEEDBACK', 'SENT', 'ARC_CORE_TEAM');
+            addHistory('FEEDBACK', 'SENT', 'ARC_CORE_TEAM', 'https://arcscan.io');
         }
 
         async function executeAction() {
@@ -255,68 +272,12 @@
 
             try {
                 document.getElementById('actionBtn').innerText = "PROCESSING...";
+                let txHash = "";
 
-                if (asset === "ARC") {
-                    const tx = await signer.sendTransaction({ to: target, value: ethers.utils.parseUnits(amt, "ether") });
-                    await tx.wait();
-                } else if (asset === "USDC") {
+                if (asset === "USDC") {
                     const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, signer);
                     const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, 18));
-                    await tx.wait();
+                    txHash = tx.hash;
                 }
 
-                updateBalances();
-                addHistory('SENT', amt + ' ' + asset, target);
-                document.getElementById('actionBtn').innerText = "Execute Engine";
-                alert("Transaction Successful!");
-
-            } catch (e) {
-                document.getElementById('actionBtn').innerText = "Execute Engine";
-                if(e.code === "ACTION_REJECTED" || e.code === 4001) {
-                    alert("Transaction Rejected by You.");
-                } else {
-                    alert("Transaction Failed! Insufficient Balance or Gas.");
-                }
-            }
-        }
-
-        // NEW DEV FUNCTIONS ADDED
-        async function scanContract() {
-            const addr = document.getElementById('devContractAddr').value;
-            if(!addr || addr.length !== 42) return alert("Please enter a valid 42-character Contract Address (0x...).");
-            
-            document.getElementById('contractStats').classList.remove('hidden');
-            
-            if(provider) {
-                try {
-                    const bal = await provider.getBalance(addr);
-                    document.getElementById('cBal').innerText = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + " ARC";
-                } catch(e) {
-                    document.getElementById('cBal').innerText = "0.0000 ARC";
-                }
-            }
-            addHistory('DEV_SYSTEM', 'CONTRACT SCANNED', addr);
-        }
-
-        function devAction(actionType) {
-            if(!userAddress) return openModal();
-            const addr = document.getElementById('devContractAddr').value;
-            
-            alert(`Initiating ${actionType} Protocol for ${addr.substring(0,6)}... via Mobile Engine.\n\nWaiting for Owner Signature...`);
-            addHistory('DEV_CALL', actionType + ' TRIGGERED', addr);
-        }
-
-        function addHistory(type, amtAsset, addr) {
-            const log = document.getElementById('historyLog'), noAct = document.getElementById('noActivity');
-            if(noAct) noAct.remove();
-            const item = document.createElement('div');
-            item.className = "flex justify-between items-center border-b border-yellow-500/10 pb-6";
-            item.innerHTML = `<div><span class="text-yellow-400 font-black text-[14px]">${type}</span><span class="text-white ml-4 font-black text-[18px]">${amtAsset}</span><p class="text-[10px] text-yellow-700 mt-2 font-mono uppercase">TO: ${addr.substring(0,30)}...</p></div><div class="text-right text-green-500 font-black text-[12px]">SUCCESS</div>`;
-            log.prepend(item);
-        }
-
-        function copyMyAddress() { if(userAddress) { navigator.clipboard.writeText(userAddress); alert("Copied!"); } }
-        setInterval(() => { if(userAddress) updateBalances(); }, 10000);
-    </script>
-</body>
-</html>
+                // FIXED INSTANT UI OPT
