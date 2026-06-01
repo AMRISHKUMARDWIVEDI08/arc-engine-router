@@ -45,7 +45,7 @@
                 <i class="fa-solid fa-wallet text-xl text-cyan-400"></i> Bitget Wallet
             </div>
             <div class="wallet-opt" onclick="initConnect('rabby')">
-                <img src="https://rabby.io/docs/rabby-logo.png" class="w-6 h-6 rounded-full object-contain" onerror="this.src='https://assets.coingecko.com/coins/images/34336/large/rabby.png'"> Rabby Wallet
+                <img src="https://assets.coingecko.com/coins/images/34336/large/rabby.png" class="w-6 h-6 rounded-full object-contain"> Rabby Wallet
             </div>
 
             <button onclick="closeModal()" class="mt-4 font-black uppercase underline text-xs">CANCEL</button>
@@ -162,14 +162,6 @@
             "function transfer(address to, uint amount) returns (bool)"
         ];
 
-        const ARC_NET_CONFIG = {
-            chainId: "0x6f", // chain id 111
-            chainName: "Arc Testnet",
-            rpcUrls: ["https://rpc.testnet.arc.io"],
-            nativeCurrency: { name: "ARC", symbol: "ARC", decimals: 18 },
-            blockExplorerUrls: ["https://arcscan.io"]
-        };
-
         function openModal() { document.getElementById('walletModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('walletModal').style.display = 'none'; }
 
@@ -177,8 +169,8 @@
             closeModal();
             let ethProvider;
 
-            if (walletType === 'metamask') ethProvider = window.ethereum;
-            else if (walletType === 'okx') ethProvider = window.okxwallet || window.ethereum;
+            if (walletType === 'okx') ethProvider = window.okxwallet || window.ethereum;
+            else if (walletType === 'metamask') ethProvider = window.ethereum;
             else if (walletType === 'trust') ethProvider = window.trustwallet || window.ethereum;
             else if (walletType === 'bitget') ethProvider = window.bitkeep && window.bitkeep.ethereum || window.ethereum;
             else if (walletType === 'rabby') ethProvider = window.rabby || window.ethereum;
@@ -191,22 +183,6 @@
                     provider = new ethers.providers.Web3Provider(ethProvider, "any");
                     signer = provider.getSigner();
 
-                    try {
-                        await ethProvider.request({
-                            method: 'wallet_switchEthereumChain',
-                            params: [{ chainId: ARC_NET_CONFIG.chainId }]
-                        });
-                    } catch (switchError) {
-                        if (switchError.code === 4902) {
-                            try {
-                                await ethProvider.request({
-                                    method: 'wallet_addEthereumChain',
-                                    params: [ARC_NET_CONFIG]
-                                });
-                            } catch (addError) { console.error("Could not add network"); }
-                        }
-                    }
-
                     document.getElementById('connectBtn').innerText = "LIVE";
                     document.getElementById('dcBtn').classList.remove('hidden');
                     document.getElementById('myFullAddr').innerText = userAddress;
@@ -217,9 +193,9 @@
                     targetField.removeAttribute('readonly');
 
                     updateBalances();
-                } catch (e) { alert("Connection Rejected by User"); }
+                } catch (e) { alert("Connection Error"); }
             } else { 
-                alert("Selected Wallet Not Found! Please install the app or extension."); 
+                alert("Selected Wallet Extension Not Found!"); 
             }
         }
 
@@ -229,7 +205,7 @@
                 const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, provider);
                 const uBal = await contract.balanceOf(userAddress);
                 document.getElementById('usdcBalanceBig').innerText = parseFloat(ethers.utils.formatUnits(uBal, 18)).toFixed(2);
-            } catch (e) { console.error("Balance Update Error"); }
+            } catch (e) { console.error("Balance Sync Error"); }
         }
 
         function disconnectNode() {
@@ -265,7 +241,7 @@
             const msg = document.getElementById('feedbackMsg').value;
             if(!msg || msg.trim() === "") return alert("Please type your feedback first.");
             
-            alert("Feedback Submitted! Thank you for helping us improve.");
+            alert("Feedback Submitted!");
             document.getElementById('feedbackMsg').value = '';
             addHistory('FEEDBACK', 'SENT', 'ARC_CORE_TEAM', 'https://arcscan.io');
         }
@@ -290,24 +266,20 @@
 
                 const explorerLink = `https://arcscan.io/tx/${txHash}`;
                 document.getElementById('actionBtn').innerText = "Execute Engine";
-                alert(`Transaction Broadcasted Successfully!\n\nHash: ${txHash}`);
+                alert(`Transaction Success! Hash: ${txHash}`);
                 
                 addHistory('SENT', amt + ' ' + asset, target, explorerLink);
                 updateBalances();
 
             } catch (e) {
                 document.getElementById('actionBtn').innerText = "Execute Engine";
-                if(e.code === "ACTION_REJECTED" || e.code === 4001) {
-                    alert("Transaction Rejected by You.");
-                } else {
-                    alert("Transaction Failed! Insufficient Balance or Gas.");
-                }
+                alert("Transaction Rejected or Failed.");
             }
         }
 
         async function scanContract() {
             const addr = document.getElementById('devContractAddr').value;
-            if(!addr || addr.length !== 42) return alert("Please enter a valid 42-character Contract Address (0x...).");
+            if(!addr || addr.length !== 42) return alert("Enter valid address");
             
             document.getElementById('contractStats').classList.remove('hidden');
             
@@ -326,8 +298,7 @@
         function devAction(actionType) {
             if(!userAddress) return openModal();
             const addr = document.getElementById('devContractAddr').value;
-            
-            alert(`Initiating ${actionType} Protocol for ${addr.substring(0,6)}... via Mobile Engine.\n\nWaiting for Owner Signature...`);
+            alert(`Initiating ${actionType} Protocol...`);
             addHistory('DEV_CALL', actionType + ' TRIGGERED', addr, `https://arcscan.io/address/${addr}`);
         }
 
