@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght=900&family=Inter:wght=400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Inter:wght@400;700;900&display=swap');
         body { background-color: #facc15; color: #000; font-family: 'Inter', sans-serif; overflow-x: hidden; margin: 0; }
         .glass-card { background: #000 !important; border: 4px solid #000; border-radius: 2.8rem; box-shadow: 0 35px 70px rgba(0,0,0,0.45); margin-bottom: 25px; }
         @keyframes spin3D { 0% { transform: perspective(1000px) rotateY(0deg); } 100% { transform: perspective(1000px) rotateY(360deg); } }
@@ -33,7 +33,7 @@
             <h2 class="text-2xl font-black uppercase mb-6 italic">Select Wallet</h2>
             
             <div class="wallet-opt" onclick="initConnect('metamask')">
-                <img src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/LOGOS/MetaMask_Logo_fiat.png" class="w-6 h-6 object-contain"> MetaMask
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Mirror_Logo.svg" class="w-6 h-6"> MetaMask
             </div>
             <div class="wallet-opt" onclick="initConnect('okx')">
                 <i class="fa-solid fa-circle-nodes text-xl text-white"></i> OKX Wallet
@@ -45,7 +45,7 @@
                 <i class="fa-solid fa-wallet text-xl text-cyan-400"></i> Bitget Wallet
             </div>
             <div class="wallet-opt" onclick="initConnect('rabby')">
-                <img src="https://assets.coingecko.com/coins/images/34336/large/rabby.png" class="w-6 h-6 rounded-full object-contain"> Rabby Wallet
+                <img src="https://rabby.io/assets/logo.png" class="w-6 h-6 rounded-full"> Rabby Wallet
             </div>
 
             <button onclick="closeModal()" class="mt-4 font-black uppercase underline text-xs">CANCEL</button>
@@ -55,7 +55,7 @@
     <div class="flex justify-between items-center mb-10 pt-8">
         <div class="flex items-center gap-5">
             <div class="logo-3d">
-                <img src="logo.png" class="w-20 h-20 rounded-full border-4 border-black" onerror="this.src='https://arc.xyz/favicon.ico'">
+                <img src="https://raw.githubusercontent.com/AMRISHKUMARDWIVEDI08/arc-engine-router/main/logo.png" class="w-20 h-20 rounded-full border-4 border-black" onerror="this.src='https://arc.xyz/favicon.ico'">
             </div>
             <div>
                 <h1 class="text-3xl font-black italic text-black leading-none uppercase">ARC ENGINE</h1>
@@ -70,11 +70,11 @@
 
     <div class="glass-card p-10 relative">
         <div class="flex justify-between items-center mb-4">
-            <span class="label-text">USDC Balance</span>
+            <span class="label-text">Balance</span>
             <button onclick="disconnectNode()" id="dcBtn" class="hidden bg-red-600 text-white text-[9px] px-3 py-1 rounded-full font-black border-2 border-black">DISCONNECT</button>
         </div>
-        <div class="flex items-baseline gap-3 mb-2">
-            <h2 id="usdcBalanceBig" class="big-number">0.00</h2>
+        <div class="flex items-baseline gap-3 mb-6">
+            <h2 id="balanceDisp" class="big-number">0.0000</h2>
             <span class="text-2xl text-yellow-500 font-black italic">USDC</span>
         </div>
     </div>
@@ -89,11 +89,10 @@
     </div>
 
     <div class="glass-card p-10 shadow-2xl">
-        
         <div id="actionContent" class="space-y-8">
             <div>
                 <label class="label-text !text-[11px]">Target Node ID</label>
-                <input type="text" id="recipient" placeholder="Awaiting Wallet Connection..." value="" class="input-heavy" readonly>
+                <input type="text" id="recipient" value="0x20910Aa09451FE483D1930C25a4556a32160F873" class="input-heavy">
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -133,18 +132,7 @@
                 <input type="text" id="devContractAddr" placeholder="Paste 0x... Contract Address" class="input-heavy text-[13px] border-yellow-500">
             </div>
             <button onclick="scanContract()" class="w-full bg-white text-black py-4 rounded-[2rem] text-[14px] font-black uppercase border-4 border-black active:scale-95 transition-all shadow-xl">Scan Contract</button>
-            
-            <div id="contractStats" class="hidden bg-black p-5 rounded-2xl border border-yellow-500/20 text-left space-y-3 mt-4">
-                <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Network Status: <span class="text-green-500">Active</span></p>
-                <p class="text-yellow-500 text-[10px] font-black uppercase tracking-widest">Liquidity: <span id="cBal" class="text-white">0.00 USDC</span></p>
-                
-                <div class="grid grid-cols-2 gap-3 mt-5 border-t border-yellow-500/20 pt-4">
-                    <button onclick="devAction('PAUSE')" class="bg-red-600 text-white py-3 rounded-xl text-[10px] font-black uppercase border-2 border-black">Emergency Pause</button>
-                    <button onclick="devAction('TRANSFER')" class="bg-blue-600 text-white py-3 rounded-xl text-[10px] font-black uppercase border-2 border-black">Transfer Owner</button>
-                </div>
-            </div>
         </div>
-
     </div>
 
     <div class="mt-12 px-2">
@@ -156,69 +144,54 @@
 
     <script>
         let provider, signer, userAddress;
-        const USDC_CONTRACT = "0x127bF57662c19958E406981882046524316bED77";
-        const USDC_ABI = [
-            "function balanceOf(address) view returns (uint256)",
-            "function transfer(address to, uint amount) returns (bool)"
-        ];
+        const USDC_CONTRACT = "0x3600000000000000000000000000000000000000";
+        const USDC_ABI = ["function balanceOf(address) view returns (uint256)", "function transfer(address to, uint amount) returns (bool)"];
 
         function openModal() { document.getElementById('walletModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('walletModal').style.display = 'none'; }
 
         async function initConnect(walletType) {
             closeModal();
-            let ethProvider;
+            let ethProvider = window.ethereum;
 
             if (walletType === 'okx') ethProvider = window.okxwallet || window.ethereum;
-            else if (walletType === 'metamask') ethProvider = window.ethereum;
             else if (walletType === 'trust') ethProvider = window.trustwallet || window.ethereum;
-            else if (walletType === 'bitget') ethProvider = window.bitkeep && window.bitkeep.ethereum || window.ethereum;
+            else if (walletType === 'bitget') ethProvider = (window.bitkeep && window.bitkeep.ethereum) || window.ethereum;
             else if (walletType === 'rabby') ethProvider = window.rabby || window.ethereum;
-            else ethProvider = window.ethereum;
 
-            if (ethProvider) {
-                try {
-                    const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
-                    userAddress = accounts[0];
-                    provider = new ethers.providers.Web3Provider(ethProvider, "any");
-                    signer = provider.getSigner();
+            if (!ethProvider) return alert("Wallet Not Found!");
 
-                    document.getElementById('connectBtn').innerText = "LIVE";
-                    document.getElementById('dcBtn').classList.remove('hidden');
-                    document.getElementById('myFullAddr').innerText = userAddress;
-                    document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${userAddress}`;
-                    
-                    const targetField = document.getElementById('recipient');
-                    targetField.value = "0x20910Aa09451FE483D1930C25a4556a32160F873";
-                    targetField.removeAttribute('readonly');
+            try {
+                const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
+                userAddress = accounts[0];
+                provider = new ethers.providers.Web3Provider(ethProvider, "any");
+                signer = provider.getSigner();
 
-                    updateBalances();
-                } catch (e) { alert("Connection Error"); }
-            } else { 
-                alert("Selected Wallet Extension Not Found!"); 
+                document.getElementById('connectBtn').innerText = "LIVE";
+                document.getElementById('dcBtn').classList.remove('hidden');
+                document.getElementById('myFullAddr').innerText = userAddress;
+                document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${userAddress}`;
+                
+                updateBalances();
+            } catch (e) {
+                alert("Connection Rejected. Please allow the wallet popup.");
             }
         }
 
         async function updateBalances() {
-            if(!userAddress) return;
+            if(!userAddress || !provider) return;
             try {
                 const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, provider);
                 const uBal = await contract.balanceOf(userAddress);
-                document.getElementById('usdcBalanceBig').innerText = parseFloat(ethers.utils.formatUnits(uBal, 18)).toFixed(2);
-            } catch (e) { console.error("Balance Sync Error"); }
+                document.getElementById('balanceDisp').innerText = parseFloat(ethers.utils.formatUnits(uBal, 6)).toFixed(4);
+            } catch (e) { console.error("Balance Update Error"); }
         }
 
         function disconnectNode() {
             userAddress = null;
             document.getElementById('connectBtn').innerText = "Connect";
             document.getElementById('dcBtn').classList.add('hidden');
-            document.getElementById('usdcBalanceBig').innerText = "0.00";
-            
-            const targetField = document.getElementById('recipient');
-            targetField.value = "";
-            targetField.setAttribute('readonly', true);
-            targetField.placeholder = "Awaiting Wallet Connection...";
-
+            document.getElementById('balanceDisp').innerText = "0.0000";
             alert("Wallet Disconnected Safely.");
         }
 
@@ -237,82 +210,39 @@
             else document.getElementById('actionContent').classList.remove('hidden');
         }
 
-        function submitFeedback() {
-            const msg = document.getElementById('feedbackMsg').value;
-            if(!msg || msg.trim() === "") return alert("Please type your feedback first.");
-            
-            alert("Feedback Submitted!");
-            document.getElementById('feedbackMsg').value = '';
-            addHistory('FEEDBACK', 'SENT', 'ARC_CORE_TEAM', 'https://arcscan.io');
-        }
-
         async function executeAction() {
             if (!userAddress) return openModal();
             const amt = document.getElementById('inputAmt').value;
             const target = document.getElementById('recipient').value;
-            const asset = document.getElementById('assetSelect').value;
 
-            if (!amt || amt <= 0) return alert("Enter a valid volume");
+            if (!amt || parseFloat(amt) <= 0) return alert("Enter a valid volume");
 
             try {
                 document.getElementById('actionBtn').innerText = "PROCESSING...";
-                let txHash = "";
 
-                if (asset === "USDC") {
-                    const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, signer);
-                    const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, 18));
-                    txHash = tx.hash;
-                }
+                const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, signer);
+                const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, 6));
+                await tx.wait();
 
-                const explorerLink = `https://arcscan.io/tx/${txHash}`;
-                document.getElementById('actionBtn').innerText = "Execute Engine";
-                alert(`Transaction Success! Hash: ${txHash}`);
-                
-                addHistory('SENT', amt + ' ' + asset, target, explorerLink);
                 updateBalances();
-
+                addHistory(amt, target, tx.hash);
+                alert(`✅ Transaction Successful!\n\nTx Hash: \( {tx.hash}\n\nView on ARC Scan: https://testnet.arcscan.app/tx/ \){tx.hash}`);
             } catch (e) {
+                alert("Transaction Failed! Check balance or network.");
+            } finally {
                 document.getElementById('actionBtn').innerText = "Execute Engine";
-                alert("Transaction Rejected or Failed.");
             }
         }
 
-        async function scanContract() {
-            const addr = document.getElementById('devContractAddr').value;
-            if(!addr || addr.length !== 42) return alert("Enter valid address");
-            
-            document.getElementById('contractStats').classList.remove('hidden');
-            
-            if(provider) {
-                try {
-                    const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, provider);
-                    const uBal = await contract.balanceOf(addr);
-                    document.getElementById('cBal').innerText = parseFloat(ethers.utils.formatUnits(uBal, 18)).toFixed(2) + " USDC";
-                } catch(e) {
-                    document.getElementById('cBal').innerText = "0.00 USDC";
-                }
-            }
-            addHistory('DEV_SYSTEM', 'CONTRACT SCANNED', addr, `https://arcscan.io/address/${addr}`);
-        }
-
-        function devAction(actionType) {
-            if(!userAddress) return openModal();
-            const addr = document.getElementById('devContractAddr').value;
-            alert(`Initiating ${actionType} Protocol...`);
-            addHistory('DEV_CALL', actionType + ' TRIGGERED', addr, `https://arcscan.io/address/${addr}`);
-        }
-
-        function addHistory(type, amtAsset, addr, targetUrl) {
+        function addHistory(amt, addr, txHash) {
             const log = document.getElementById('historyLog'), noAct = document.getElementById('noActivity');
             if(noAct) noAct.remove();
             const item = document.createElement('div');
             item.className = "flex justify-between items-center border-b border-yellow-500/10 pb-6";
-            item.innerHTML = `<div><span class="text-yellow-400 font-black text-[14px]">${type}</span><span class="text-white ml-4 font-black text-[18px]">${amtAsset}</span><p class="text-[10px] text-yellow-700 mt-2 font-mono uppercase">TO: ${addr.substring(0,30)}...</p></div><div class="text-right"><a href="${targetUrl}" target="_blank" class="text-green-500 font-black text-[12px] underline">VIEW ON SCAN</a></div>`;
+            item.innerHTML = `<div><span class="text-yellow-400 font-black text-[14px]">SENT</span><span class="text-white ml-4 font-black text-[18px]">${amt} USDC</span><p class="text-[10px] text-yellow-700 mt-2 font-mono uppercase">TO: ${addr.substring(0,30)}...</p></div><div class="text-right text-green-500 font-black text-[12px]">SUCCESS</div>`;
             log.prepend(item);
         }
 
-        function copyMyAddress() { if(userAddress) { navigator.clipboard.writeText(userAddress); alert("Copied!"); } }
-        setInterval(() => { if(userAddress) updateBalances(); }, 10000);
-    </script>
-</body>
-</html>
+        function submitFeedback() {
+            const msg = document.getElementById('feedbackMsg').value.trim();
+            if(!msg)
