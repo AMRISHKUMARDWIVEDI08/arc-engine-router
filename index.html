@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+here<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -28,7 +28,6 @@
 </head>
 <body class="p-4 max-w-lg mx-auto pb-24">
 
-    <!-- Rest of your HTML is exactly same as you gave -->
     <div id="walletModal">
         <div class="modal-content">
             <h2 class="text-2xl font-black uppercase mb-6 italic">Select Wallet</h2>
@@ -110,7 +109,6 @@
             <button onclick="executeAction()" id="actionBtn" class="w-full bg-yellow-400 py-7 rounded-[2.5rem] text-[18px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Execute Engine</button>
         </div>
         
-        <!-- Receive, Feedback, Dev sections same as your code -->
         <div id="receiveUI" class="hidden text-center py-6 space-y-6">
             <p class="label-text">QR Address</p>
             <div class="bg-white p-4 inline-block rounded-[3rem] mx-auto shadow-2xl border-4 border-black">
@@ -222,10 +220,11 @@
                 const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, 6));
                 await tx.wait();
 
-                await new Promise(r => setTimeout(r, 1500)); // Small delay for indexing
+                await new Promise(r => setTimeout(r, 2000)); // Indexing delay
                 await updateBalances();
 
                 addHistory(amt, target, tx.hash);
+                
                 alert(`✅ Transaction Successful!\n\nTx Hash: \( {tx.hash}\n\nView on ARC Scan: https://testnet.arcscan.app/tx/ \){tx.hash}`);
             } catch (e) {
                 console.error(e);
@@ -264,4 +263,4 @@
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
-                            </html>
+    </html>
