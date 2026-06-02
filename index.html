@@ -1,4 +1,4 @@
-here<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -31,7 +31,6 @@ here<!DOCTYPE html>
     <div id="walletModal">
         <div class="modal-content">
             <h2 class="text-2xl font-black uppercase mb-6 italic">Select Wallet</h2>
-            
             <div class="wallet-opt" onclick="initConnect('metamask')">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Mirror_Logo.svg" class="w-6 h-6"> MetaMask
             </div>
@@ -47,7 +46,6 @@ here<!DOCTYPE html>
             <div class="wallet-opt" onclick="initConnect('rabby')">
                 <img src="https://rabby.io/assets/logo.png" class="w-6 h-6 rounded-full"> Rabby Wallet
             </div>
-
             <button onclick="closeModal()" class="mt-4 font-black uppercase underline text-xs">CANCEL</button>
         </div>
     </div>
@@ -103,7 +101,7 @@ here<!DOCTYPE html>
                 </div>
                 <div>
                     <label class="label-text !text-[11px]">Volume</label>
-                    <input type="number" id="inputAmt" placeholder="0.00" class="input-heavy">
+                    <input type="number" id="inputAmt" placeholder="0.00" class="input-heavy" step="0.0001">
                 </div>
             </div>
             <button onclick="executeAction()" id="actionBtn" class="w-full bg-yellow-400 py-7 rounded-[2.5rem] text-[18px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Execute Engine</button>
@@ -209,26 +207,28 @@ here<!DOCTYPE html>
 
         async function executeAction() {
             if (!userAddress) return openModal();
-            const amt = document.getElementById('inputAmt').value;
+            const amt = document.getElementById('inputAmt').value.trim();
             const target = document.getElementById('recipient').value;
 
             if (!amt || parseFloat(amt) <= 0) return alert("Enter a valid volume");
 
             try {
                 document.getElementById('actionBtn').innerText = "PROCESSING...";
+                
                 const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, signer);
-                const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, 6));
+                const amount = ethers.utils.parseUnits(amt, 6);
+                
+                const tx = await contract.transfer(target, amount);
                 await tx.wait();
 
-                await new Promise(r => setTimeout(r, 2000)); // Indexing delay
+                await new Promise(r => setTimeout(r, 2500)); // Extra delay for ARC indexing
                 await updateBalances();
 
                 addHistory(amt, target, tx.hash);
-                
                 alert(`✅ Transaction Successful!\n\nTx Hash: \( {tx.hash}\n\nView on ARC Scan: https://testnet.arcscan.app/tx/ \){tx.hash}`);
             } catch (e) {
                 console.error(e);
-                alert("Transaction Failed! Check balance or network.");
+                alert("Transaction Failed! Check balance, network, or try smaller amount.");
             } finally {
                 document.getElementById('actionBtn').innerText = "Execute Engine";
             }
@@ -260,7 +260,7 @@ here<!DOCTYPE html>
             if(userAddress) { navigator.clipboard.writeText(userAddress); alert("Copied!"); } 
         }
 
-        setInterval(() => { if(userAddress) updateBalances(); }, 10000);
+        setInterval(() => { if(userAddress) updateBalances(); }, 8000);
     </script>
 </body>
-    </html>
+</html>
