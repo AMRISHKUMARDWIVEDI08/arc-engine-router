@@ -214,21 +214,20 @@
 
             try {
                 document.getElementById('actionBtn').innerText = "PROCESSING...";
-                
                 const contract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, signer);
-                const amount = ethers.utils.parseUnits(amt, 6);
-                
-                const tx = await contract.transfer(target, amount);
+                const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, 6));
                 await tx.wait();
 
-                await new Promise(r => setTimeout(r, 2500)); // Extra delay for ARC indexing
+                await new Promise(r => setTimeout(r, 2000));
                 await updateBalances();
 
                 addHistory(amt, target, tx.hash);
-                alert(`✅ Transaction Successful!\n\nTx Hash: \( {tx.hash}\n\nView on ARC Scan: https://testnet.arcscan.app/tx/ \){tx.hash}`);
+
+                // FIXED ALERT
+                alert("✅ Transaction Successful!\n\nTx Hash: " + tx.hash + "\n\nView on ARC Scan: https://testnet.arcscan.app/tx/" + tx.hash);
             } catch (e) {
                 console.error(e);
-                alert("Transaction Failed! Check balance, network, or try smaller amount.");
+                alert("Transaction Failed! Check balance or network.");
             } finally {
                 document.getElementById('actionBtn').innerText = "Execute Engine";
             }
@@ -239,28 +238,4 @@
             if(noAct) noAct.remove();
             const item = document.createElement('div');
             item.className = "flex justify-between items-center border-b border-yellow-500/10 pb-6";
-            item.innerHTML = `<div><span class="text-yellow-400 font-black text-[14px]">SENT</span><span class="text-white ml-4 font-black text-[18px]">${amt} USDC</span><p class="text-[10px] text-yellow-700 mt-2 font-mono uppercase">TO: ${addr.substring(0,30)}...</p></div><div class="text-right text-green-500 font-black text-[12px]">SUCCESS</div>`;
-            log.prepend(item);
-        }
-
-        function submitFeedback() {
-            const msg = document.getElementById('feedbackMsg').value.trim();
-            if(!msg) return alert("Please type your feedback first.");
-            alert("Feedback Submitted! Thank you.");
-            document.getElementById('feedbackMsg').value = '';
-        }
-
-        function scanContract() {
-            const addr = document.getElementById('devContractAddr').value;
-            if(!addr) return alert("Enter contract address");
-            alert("Contract Scanned!");
-        }
-
-        function copyMyAddress() { 
-            if(userAddress) { navigator.clipboard.writeText(userAddress); alert("Copied!"); } 
-        }
-
-        setInterval(() => { if(userAddress) updateBalances(); }, 8000);
-    </script>
-</body>
-</html>
+            item.innerHTML = `<div><span class="text-yellow-400 font-black text-[14px]">SENT</span><span class="text-white ml-4 font-black text-[18px]">${amt} USDC</span><p class="text-[10px] text-yellow-700 mt-2 font-mono uppercase">TO: ${addr.substring(
